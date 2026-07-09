@@ -1,11 +1,13 @@
-let Router = require('express').Router
+// let Router = require('express').Router
+let express=require("express")
+// import { addUser } from '../controllers/users.controllers.js';
+let {addUser,getUser, addUsers}=require("../controllers/users.controllers");
 
-Router.get('/addUser', (req, res) =>{
+// console.log(addUser)
+const router = express.Router();
 
-    
-});
-Router.get('/deleteUser', addUser);
-Router.post('/updateUser', addUser);
-
-module.exports = Router;
+router.post('/addUser',addUser)
+router.get('/getUser',getUser)
+router.post('/addUsers',addUsers)
+module.exports = router;
 
