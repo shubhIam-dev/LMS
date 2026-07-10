@@ -17,6 +17,4 @@ app.use('/assignments',assignmentsRoutes)
 app.get('/', (req, res) =>{
  res.send('backend is working')
 })
-
-
 app.listen(9000)
