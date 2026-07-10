@@ -1,0 +1,102 @@
+/* 🎨 Global Styles - These are like the paint and wallpaper for our entire app */
+/* Everything here applies to ALL pages automatically */
+
+/* 🌈 Color Theme - Think of these as our brand colors */
+:root {
+  /* Primary Colors - The main colors of our ERP portal */
+  --primary: #4f46e5;        /* Indigo - Main brand color */
+  --primary-light: #818cf8;  /* Lighter indigo for hover effects */
+  --primary-dark: #3730a3;   /* Darker indigo for active states */
+  
+  /* Background Colors */
+  --bg-main: #f0f2f5;        /* Light gray background for the page */
+  --bg-white: #ffffff;        /* White background for cards */
+  --bg-sidebar: #1e1b4b;     /* Dark purple for the sidebar */
+  --bg-sidebar-hover: #312e81; /* Slightly lighter for hover effects */
+  
+  /* Text Colors */
+  --text-primary: #1f2937;   /* Dark gray for main text */
+  --text-secondary: #6b7280; /* Medium gray for less important text */
+  --text-light: #9ca3af;     /* Light gray for hints */
+  --text-white: #ffffff;     /* White text for dark backgrounds */
+  
+  /* Status Colors - For showing success, warning, errors */
+  --success: #10b981;        /* Green - for "all good" messages */
+  --warning: #f59e0b;        /* Yellow - for "be careful" messages */
+  --error: #ef4444;          /* Red - for error messages */
+  --info: #3b82f6;           /* Blue - for informational messages */
+  
+  /* Border & Shadow */
+  --border: #e5e7eb;         /* Light border color */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Layout */
+  --sidebar-width: 260px;    /* How wide the sidebar is */
+  --header-height: 64px;     /* Height of the header */
+  
+  /* Font settings */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+/* 🌍 Base styles for the entire page */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 🔗 Link styles */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--primary-light);
+}
+
+/* 📝 Form elements base styles */
+input, button {
+  font-family: inherit;
+}
+
+/* 🖱️ Remove default focus outline and add custom one */
+input:focus, button:focus {
+  outline: none;
+}
+
+/* 📜 Scrollbar styling for better look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-light);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
