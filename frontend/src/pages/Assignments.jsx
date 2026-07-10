@@ -1,4 +1,4 @@
-// 📝 Assignments - Shows all assignments
+// Assignments - Shows all assignments
 // This is like the assignment notice board - lists every homework/project!
 
 import { useState, useEffect } from "react";
@@ -9,14 +9,14 @@ function Assignments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 📥 Fetch all assignments when page loads
+  // Fetch all assignments when page loads
   useEffect(() => {
     async function fetchAssignments() {
       try {
         const data = await assignmentApi.getAllAssignments();
         setAssignments(Array.isArray(data) ? data : []);
       } catch (err) {
-        setError("❌ Failed to load assignments. Please try again later.");
+        setError("Failed to load assignments. Please try again later.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -25,8 +25,7 @@ function Assignments() {
     fetchAssignments();
   }, []);
 
-  // 📅 Helper function to format dates nicely
-  // Converts "2024-12-25T00:00:00.000Z" into "Dec 25, 2024"
+  // Helper function to format dates nicely
   function formatDate(dateString) {
     if (!dateString) return "No date set";
     const date = new Date(dateString);
@@ -37,7 +36,7 @@ function Assignments() {
     });
   }
 
-  // 🎨 Helper function to pick a color based on assignment type
+  // Helper function to pick a color based on assignment type
   function getAssignmentTypeColor(type) {
     const colors = {
       Homework: "#4CAF50",
@@ -51,7 +50,7 @@ function Assignments() {
   if (loading) {
     return (
       <div className="page-content">
-        <div className="loading-spinner">⏳ Loading assignments...</div>
+        <div className="loading-spinner">Loading assignments...</div>
       </div>
     );
   }
@@ -59,7 +58,7 @@ function Assignments() {
   return (
     <div className="page-content">
       <div className="page-header">
-        <h1>📝 Assignments</h1>
+        <h1>Assignments</h1>
         <p>Track all your assignments, projects, and deadlines.</p>
       </div>
 
@@ -67,9 +66,9 @@ function Assignments() {
 
       {assignments.length === 0 ? (
         <div className="empty-state">
-          <span className="empty-icon">🎉</span>
+          <div className="empty-icon"></div>
           <h3>No Assignments Yet</h3>
-          <p>No assignments have been posted yet. Enjoy the free time! 📚</p>
+          <p>No assignments have been posted yet.</p>
         </div>
       ) : (
         <div className="assignments-list">
@@ -109,10 +108,10 @@ function Assignments() {
                     </span>
                   )}
                   <span className="assignment-date">
-                    📅 Due: {formatDate(assignment.dueOn)}
+                    Due: {formatDate(assignment.dueOn)}
                   </span>
                   <span className="assignment-date">
-                    📆 Created: {formatDate(assignment.createdOn)}
+                    Created: {formatDate(assignment.createdOn)}
                   </span>
                 </div>
               </div>

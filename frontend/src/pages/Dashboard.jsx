@@ -1,4 +1,4 @@
-// 📊 Dashboard - The home page after login
+// Dashboard - The home page after login
 // This is like the main notice board of the college - shows everything at a glance!
 
 import { useState, useEffect } from "react";
@@ -15,12 +15,11 @@ function Dashboard() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 📥 When this page loads, fetch all the data from the backend
+  // When this page loads, fetch all the data from the backend
   useEffect(() => {
     async function fetchData() {
       try {
         // Fetch courses and assignments AT THE SAME TIME (parallel)
-        // Promise.all means "wait for both of these to finish"
         const [coursesData, assignmentsData] = await Promise.all([
           courseApi.getAllCourses(),
           assignmentApi.getAllAssignments(),
@@ -41,23 +40,23 @@ function Dashboard() {
   if (loading) {
     return (
       <div className="page-content">
-        <div className="loading-spinner">⏳ Loading your dashboard...</div>
+        <div className="loading-spinner">Loading your dashboard...</div>
       </div>
     );
   }
 
   return (
     <div className="page-content">
-      {/* 👋 Welcome section */}
+      {/* Welcome section */}
       <div className="welcome-section">
-        <h1>👋 Welcome, {user?.name || "Student"}!</h1>
+        <h1>Welcome, {user?.name || "Student"}!</h1>
         <p>Here's your academic overview at a glance.</p>
       </div>
 
-      {/* 📊 Stats Cards - like a quick report card */}
+      {/* Stats Cards - like a quick report card */}
       <div className="stats-grid">
         <div className="stat-card courses-stat">
-          <div className="stat-icon">📚</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>{courses.length}</h3>
             <p>Total Courses</p>
@@ -65,7 +64,7 @@ function Dashboard() {
         </div>
 
         <div className="stat-card assignments-stat">
-          <div className="stat-icon">📝</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>{assignments.length}</h3>
             <p>Assignments</p>
@@ -73,7 +72,7 @@ function Dashboard() {
         </div>
 
         <div className="stat-card marks-stat">
-          <div className="stat-icon">📊</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>View</h3>
             <p>Your Marks</p>
@@ -81,7 +80,7 @@ function Dashboard() {
         </div>
 
         <div className="stat-card profile-stat">
-          <div className="stat-icon">👤</div>
+          <div className="stat-icon"></div>
           <div className="stat-info">
             <h3>{user?.email || "N/A"}</h3>
             <p>Email</p>
@@ -89,24 +88,24 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 📋 Quick Links - shortcuts to important pages */}
+      {/* Quick Links - shortcuts to important pages */}
       <div className="quick-links">
-        <h2>🔗 Quick Links</h2>
+        <h2>Quick Links</h2>
         <div className="links-grid">
           <Link to="/courses" className="quick-link-card">
-            <span className="link-icon">📚</span>
+            <span className="link-icon"></span>
             <span className="link-text">View Courses</span>
             <span className="link-arrow">→</span>
           </Link>
 
           <Link to="/assignments" className="quick-link-card">
-            <span className="link-icon">📝</span>
+            <span className="link-icon"></span>
             <span className="link-text">View Assignments</span>
             <span className="link-arrow">→</span>
           </Link>
 
           <Link to="/marks" className="quick-link-card">
-            <span className="link-icon">📊</span>
+            <span className="link-icon"></span>
             <span className="link-text">Check Marks</span>
             <span className="link-arrow">→</span>
           </Link>

@@ -1,4 +1,4 @@
-// 📊 Marks - Shows student's marks/grades
+// Marks - Shows student's marks/grades
 // This is like your online report card - shows all your scores!
 
 import { useState, useEffect } from "react";
@@ -11,7 +11,7 @@ function Marks() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 📥 Fetch marks when page loads
+  // Fetch marks when page loads
   useEffect(() => {
     async function fetchMarks() {
       try {
@@ -25,7 +25,7 @@ function Marks() {
           setMarks(Array.isArray(data) ? data : []);
         }
       } catch (err) {
-        setError("❌ Failed to load marks. Please try again later.");
+        setError("Failed to load marks. Please try again later.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -34,13 +34,13 @@ function Marks() {
     fetchMarks();
   }, [user]);
 
-  // 🧮 Calculate percentage from marks obtained and total marks
+  // Calculate percentage from marks obtained and total marks
   function calculatePercentage(obtained, total) {
     if (!total) return 0;
     return ((obtained / total) * 100).toFixed(1);
   }
 
-  // 🎨 Pick a color based on percentage (green = good, red = bad)
+  // Pick a color based on percentage (green = good, red = bad)
   function getGradeColor(percentage) {
     if (percentage >= 80) return "#4CAF50"; // Green - Excellent
     if (percentage >= 60) return "#FF9800"; // Orange - Good
@@ -48,7 +48,7 @@ function Marks() {
     return "#f44336"; // Red - Needs improvement
   }
 
-  // 📊 Calculate overall stats
+  // Calculate overall stats
   const totalMarksObtained = marks.reduce((sum, m) => sum + (m.marksObtained || 0), 0);
   const totalMarksPossible = marks.reduce((sum, m) => sum + (m.totalMarks || 0), 0);
   const overallPercentage = calculatePercentage(totalMarksObtained, totalMarksPossible);
@@ -56,7 +56,7 @@ function Marks() {
   if (loading) {
     return (
       <div className="page-content">
-        <div className="loading-spinner">⏳ Loading your marks...</div>
+        <div className="loading-spinner">Loading your marks...</div>
       </div>
     );
   }
@@ -64,13 +64,13 @@ function Marks() {
   return (
     <div className="page-content">
       <div className="page-header">
-        <h1>📊 My Marks</h1>
+        <h1>My Marks</h1>
         <p>View your academic performance across all subjects.</p>
       </div>
 
       {error && <div className="error-message">{error}</div>}
 
-      {/* 📈 Overall Performance Summary */}
+      {/* Overall Performance Summary */}
       {marks.length > 0 && (
         <div className="performance-summary">
           <div className="summary-card">
@@ -83,12 +83,12 @@ function Marks() {
             </div>
             <div className="summary-subtitle">
               {overallPercentage >= 80
-                ? "🌟 Excellent Performance!"
+                ? "Excellent Performance!"
                 : overallPercentage >= 60
-                ? "👍 Good Job!"
+                ? "Good Job!"
                 : overallPercentage >= 35
-                ? "💪 Keep Improving!"
-                : "📚 Needs More Effort"}
+                ? "Keep Improving!"
+                : "Needs More Effort"}
             </div>
           </div>
           <div className="summary-card">
@@ -101,10 +101,10 @@ function Marks() {
         </div>
       )}
 
-      {/* 📋 Marks List */}
+      {/* Marks List */}
       {marks.length === 0 ? (
         <div className="empty-state">
-          <span className="empty-icon">📭</span>
+          <div className="empty-icon"></div>
           <h3>No Marks Available</h3>
           <p>
             Your marks will appear here once they are published by your teachers.
@@ -156,7 +156,7 @@ function Marks() {
                           backgroundColor: getGradeColor(percentage),
                         }}
                       >
-                        {percentage >= 35 ? "✅ Pass" : "❌ Fail"}
+                        {percentage >= 35 ? "Pass" : "Fail"}
                       </span>
                     </td>
                   </tr>
