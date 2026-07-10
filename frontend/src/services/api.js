@@ -25,7 +25,7 @@ async function callApi(endpoint, options = {}) {
     // Convert the response to JSON format so we can use it
     return await response.json();
   } catch (error) {
-    console.error(`❌ API Error (${endpoint}):`, error);
+    console.error(` API Error (${endpoint}):`, error);
     throw error;
   }
 }
