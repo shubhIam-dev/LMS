@@ -29,10 +29,11 @@ LMS/
 │
 ├── fullflow.md       End-to-end walkthrough of a real request
 ├── DATABASE.md       📘 Every collection, every relationship, curl walkthrough of a full flow, roadmap
+├── flowofbackend.md  📘 A teacher's journey: create course → questions → assignment → enroll → grade
 └── README.md         You are here
 ```
 
-**Reading order:** `README.md` (this file) → `DATABASE.md` for the data model → `backend/learn.md` and `frontend/learn.md` for a code tour.
+**Reading order:** `README.md` (this file) → `DATABASE.md` for the data model → `flowofbackend.md` for how a teacher drives it → `backend/learn.md` and `frontend/learn.md` for a code tour.
 
 ---
 
