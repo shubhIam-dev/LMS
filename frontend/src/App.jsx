@@ -17,7 +17,7 @@ function Layout({ children }) {
   const { user } = useAuth();
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${user ? "has-sidebar" : ""}`}>
       {/* Show sidebar only if user is logged in */}
       {user && <Sidebar />}
       {/* Main content area */}

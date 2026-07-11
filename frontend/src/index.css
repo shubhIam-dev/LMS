@@ -1,102 +1,70 @@
-/* 🎨 Global Styles - These are like the paint and wallpaper for our entire app */
-/* Everything here applies to ALL pages automatically */
+/* Fonts — display serif for editorial character, workhorse sans for UI */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Inter:wght@400;500;600;700&display=swap');
 
-/* 🌈 Color Theme - Think of these as our brand colors */
 :root {
-  /* Primary Colors - The main colors of our ERP portal */
-  --primary: #4f46e5;        /* Indigo - Main brand color */
-  --primary-light: #818cf8;  /* Lighter indigo for hover effects */
-  --primary-dark: #3730a3;   /* Darker indigo for active states */
-  
-  /* Background Colors */
-  --bg-main: #f0f2f5;        /* Light gray background for the page */
-  --bg-white: #ffffff;        /* White background for cards */
-  --bg-sidebar: #1e1b4b;     /* Dark purple for the sidebar */
-  --bg-sidebar-hover: #312e81; /* Slightly lighter for hover effects */
-  
-  /* Text Colors */
-  --text-primary: #1f2937;   /* Dark gray for main text */
-  --text-secondary: #6b7280; /* Medium gray for less important text */
-  --text-light: #9ca3af;     /* Light gray for hints */
-  --text-white: #ffffff;     /* White text for dark backgrounds */
-  
-  /* Status Colors - For showing success, warning, errors */
-  --success: #10b981;        /* Green - for "all good" messages */
-  --warning: #f59e0b;        /* Yellow - for "be careful" messages */
-  --error: #ef4444;          /* Red - for error messages */
-  --info: #3b82f6;           /* Blue - for informational messages */
-  
-  /* Border & Shadow */
-  --border: #e5e7eb;         /* Light border color */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  
-  /* Layout */
-  --sidebar-width: 260px;    /* How wide the sidebar is */
-  --header-height: 64px;     /* Height of the header */
-  
-  /* Font settings */
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'Fira Code', 'Cascadia Code', Consolas, monospace;
-  
-  /* Border radius */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /* Palette — warm paper, forest ink, burnt-orange accent */
+  --paper: #F4F0E6;
+  --paper-2: #EBE4D2;
+  --card: #FFFDF8;
+  --ink: #1A1712;
+  --ink-2: #3A342A;
+  --muted: #6E6656;
+  --muted-2: #A79F8D;
+  --line: #DED5BF;
+  --line-strong: #C8BEA4;
+
+  --primary: #1F3D2E;
+  --primary-2: #2E5941;
+  --accent: #B4552A;
+  --accent-soft: #F1DBC7;
+  --danger: #A83A2F;
+  --danger-soft: #F5DED9;
+  --success: #4E6E3C;
+
+  --font-display: 'Instrument Serif', 'Times New Roman', Georgia, serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --sidebar-width: 264px;
+  --radius: 4px;
+  --radius-lg: 8px;
 }
 
-/* 🌍 Base styles for the entire page */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  line-height: 1.6;
+  background-color: var(--paper);
+  color: var(--ink);
+  line-height: 1.55;
+  font-size: 15px;
+  font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* 🔗 Link styles */
 a {
-  color: var(--primary);
+  color: var(--ink);
   text-decoration: none;
-  transition: color 0.2s;
+  border-bottom: 1px solid var(--line-strong);
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
+a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
-a:hover {
-  color: var(--primary-light);
-}
-
-/* 📝 Form elements base styles */
-input, button {
+button, input, select, textarea {
   font-family: inherit;
+  font-size: inherit;
+  color: inherit;
 }
+button { cursor: pointer; }
+input:focus, button:focus, select:focus, textarea:focus { outline: none; }
 
-/* 🖱️ Remove default focus outline and add custom one */
-input:focus, button:focus {
-  outline: none;
-}
+::selection { background: var(--accent-soft); color: var(--ink); }
 
-/* 📜 Scrollbar styling for better look */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--text-light);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
+/* Slim scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
