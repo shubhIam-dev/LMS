@@ -130,17 +130,46 @@ npm run dev             # runs Vite on http://localhost:5173
 
 Open http://localhost:5173 in your browser. The frontend expects the backend at `http://localhost:9000` — if you change that, edit `frontend/src/services/api.js`.
 
-### Step 4 — Seed a first user so you can log in
+### Step 4 — Seed your database with demo data (one command)
 
-There's no register page yet. Create a user by hitting the backend directly with `curl`, Postman, or Thunder Client:
+Your fresh MongoDB is empty — nothing to log in with, no courses to browse. The backend ships with a seeder that fills all six collections with realistic connected data (teachers, students, courses, question bank, assignments, a graded submission, marks). It uses **your own** `MONGODB_URI` from `.env` — nothing about it is hardcoded.
+
+```bash
+cd backend
+npm run seed
+```
+
+You'll see something like:
+```
+→ Connecting to MongoDB…
+✅ Connected.
+→ Clearing existing data in the six collections…
+→ Inserting users…
+→ Inserting courses…
+→ Inserting question bank…
+→ Inserting assignments…
+→ Inserting a graded submission for Aria on the DSA homework…
+→ Inserting marks rows…
+
+✅ Seed complete. Log in on the frontend with any of these:
+
+   Aria    → phone 9999999001   password demo
+   Bilal   → phone 9999999002   password demo
+   Chitra  → phone 9999999003   password demo
+```
+
+Open the frontend, log in as any of the demo students, and you'll see a fully-populated dashboard.
+
+> **Warning:** `npm run seed` **wipes all six collections** in your database before inserting. Run it on an empty database or a scratch one — not on real data you care about.
+
+Prefer to make your own user by hand instead? Send this to the backend:
 ```bash
 curl -X POST http://localhost:9000/user/addUser \
   -H "Content-Type: application/json" \
   -d '{"name":"You","email":"you@x.com","password":"test","phoneNumber":9999999999,"role":"student"}'
 ```
-Now log in on http://localhost:5173 with phone `9999999999` and password `test`.
 
-For a full walk-through of creating courses, questions, assignments, submissions, and grades via `curl`, see **[DATABASE.md](DATABASE.md) §5**.
+For a full walkthrough of creating courses, questions, assignments, submissions, and grades via `curl`, see **[DATABASE.md](DATABASE.md) §5**.
 
 ---
 
