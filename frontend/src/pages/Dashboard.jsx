@@ -2,13 +2,14 @@
 // This is like the main notice board of the college - shows everything at a glance!
 
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useSelector } from "react-redux";
 import { courseApi, assignmentApi } from "../services/api";
 import { Link } from "react-router-dom";
+import { selectUser } from "../store/authSlice";
 
 function Dashboard() {
-  // Get the currently logged-in user's info
-  const { user } = useAuth();
+  // Get the currently logged-in user's info from Redux
+  const user = useSelector(selectUser);
 
   // State to store data we fetch from the backend
   const [courses, setCourses] = useState([]);

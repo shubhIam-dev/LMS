@@ -1,63 +1,60 @@
-// LoginPage - The first screen students see
-// This is like the main gate of the college - everyone has to enter through here!
+// LoginPage — the sign-in form.
+// Dispatches loginUser() (an async thunk) and reads status/error from Redux.
 
-import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  loginUser,
+  selectAuthError,
+  selectAuthStatus,
+  selectIsAuthed,
+  clearError,
+} from "../store/authSlice";
 
 function LoginPage() {
-  // State for the form inputs
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Get the login function from our AuthContext
-  const { login } = useAuth();
-  // useNavigate is like a GPS - it helps us go to different pages
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const status = useSelector(selectAuthStatus);
+  const error = useSelector(selectAuthError);
+  const isAuthed = useSelector(selectIsAuthed);
+  const isLoading = status === "loading";
 
-  // When the user clicks the login button
-  const handleLogin = async (e) => {
-    e.preventDefault(); // Stop the form from refreshing the page
+  // If already logged in (page refresh with saved session), bounce to dashboard.
+  useEffect(() => {
+    if (isAuthed) navigate("/dashboard", { replace: true });
+  }, [isAuthed, navigate]);
 
-    // Basic validation - make sure fields aren't empty
-    if (!phoneNumber || !password) {
-      setError("Please fill in all fields");
-      return;
-    }
+  // Clear stale error when the user starts typing again.
+  useEffect(() => {
+    if (error) dispatch(clearError());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phoneNumber, password]);
 
-    setIsLoading(true);
-    setError("");
+  async function handleLogin(e) {
+    e.preventDefault();
+    if (!phoneNumber || !password) return;
 
-    // Try to log in using our auth system
-    const result = await login(phoneNumber, password);
-
-    if (result.success) {
-      // Success! Send them to the dashboard
+    const result = await dispatch(loginUser({ phoneNumber, password }));
+    if (loginUser.fulfilled.match(result)) {
       navigate("/dashboard");
-    } else {
-      // Failed - show the error message
-      setError(result.error);
     }
-
-    setIsLoading(false);
-  };
+  }
 
   return (
     <div className="login-page">
       <div className="login-container">
-        {/* College branding at the top */}
         <div className="login-header">
           <div className="login-icon"></div>
           <h1>College ERP Portal</h1>
-          <p>Welcome back! Please sign in to continue.</p>
+          <p>Welcome back. Sign in to continue.</p>
         </div>
 
-        {/* Error message (only shows if there's an error) */}
         {error && <div className="error-message">{error}</div>}
 
-        {/* Login form */}
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
             <label htmlFor="phone">Phone Number</label>
@@ -88,7 +85,6 @@ function LoginPage() {
           </button>
         </form>
 
-        {/* Help text for new users */}
         <p className="login-footer">
           Don't have an account? Contact your college administration.
         </p>

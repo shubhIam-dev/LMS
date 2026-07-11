@@ -15,33 +15,34 @@
   display: grid;
   grid-template-columns: 1.05fr 1fr;
   background: var(--paper);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Editorial left panel */
+/* Soft complementary wash — cobalt on one corner, amber on the other */
 .login-page::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 10% 15%, rgba(180, 85, 42, 0.06) 0, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(31, 61, 46, 0.06) 0, transparent 42%);
+    radial-gradient(circle at 8% 12%, rgba(30, 75, 216, 0.10) 0, transparent 45%),
+    radial-gradient(circle at 92% 82%, rgba(227, 160, 8, 0.11) 0, transparent 45%);
   pointer-events: none;
   z-index: 0;
 }
 
 .login-container {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   grid-column: 2 / -1;
   align-self: center;
   justify-self: center;
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   padding: 48px 40px;
   background: transparent;
 }
 
-/* Left decorative column with big serif quote */
 .login-page::after {
   content: "An almanac of everything you're learning — courses, marks, and the small print in between.";
   position: absolute;
@@ -53,27 +54,29 @@
   display: flex;
   align-items: center;
   font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96, 'SOFT' 60, 'WONK' 1;
   font-size: clamp(28px, 3.4vw, 46px);
-  line-height: 1.15;
+  line-height: 1.1;
   color: var(--ink);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   border-right: 1px solid var(--line);
   z-index: 1;
+  font-weight: 400;
 }
 
 .login-header { text-align: left; margin-bottom: 36px; }
 
 .login-header h1 {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 44px;
+  font-variation-settings: 'opsz' 96, 'SOFT' 50, 'WONK' 0;
+  font-weight: 500;
+  font-size: 46px;
   line-height: 1;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   margin-bottom: 12px;
   color: var(--ink);
 }
-
-.login-header h1::first-letter { font-style: italic; color: var(--accent); }
+.login-header h1::first-letter { font-style: italic; color: var(--primary); }
 
 .login-header p {
   color: var(--muted);
@@ -82,7 +85,6 @@
   max-width: 300px;
 }
 
-/* Small monogram tag above the title */
 .login-icon {
   display: inline-flex;
   align-items: center;
@@ -90,7 +92,7 @@
   font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: 20px;
@@ -98,12 +100,10 @@
 .login-icon::before {
   content: "";
   width: 18px;
-  height: 1px;
-  background: var(--muted);
+  height: 2px;
+  background: var(--accent);
 }
-.login-icon::after {
-  content: "College Registry \00B7 est. Now";
-}
+.login-icon::after { content: "College Registry · v2"; }
 
 .login-form { display: flex; flex-direction: column; gap: 18px; }
 
@@ -112,7 +112,7 @@
 .form-group label {
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -128,25 +128,34 @@
   border-radius: 0;
 }
 .form-group input::placeholder { color: var(--muted-2); }
-.form-group input:focus { border-bottom-color: var(--ink); }
+.form-group input:focus { border-bottom-color: var(--primary); }
 .form-group input:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .login-btn {
   margin-top: 12px;
   padding: 14px 20px;
-  background: var(--ink);
-  color: var(--paper);
-  border: 1px solid var(--ink);
+  background: var(--primary);
+  color: #FFFFFF;
+  border: 1px solid var(--primary);
   border-radius: var(--radius);
+  font-family: var(--font-sans);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  transition: background 0.15s ease, transform 0.08s ease;
+  transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 0 rgba(12, 24, 48, 0.12);
 }
-.login-btn:hover { background: var(--primary); border-color: var(--primary); }
-.login-btn:active { transform: translateY(1px); }
-.login-btn:disabled { opacity: 0.55; cursor: not-allowed; background: var(--muted); border-color: var(--muted); }
+.login-btn:hover {
+  background: var(--primary-2);
+  border-color: var(--primary-2);
+  box-shadow: 0 4px 14px rgba(30, 75, 216, 0.28);
+}
+.login-btn:active { transform: translateY(1px); box-shadow: none; }
+.login-btn:disabled {
+  opacity: 0.55; cursor: not-allowed;
+  background: var(--muted); border-color: var(--muted); box-shadow: none;
+}
 
 .login-footer {
   margin-top: 32px;
@@ -161,10 +170,10 @@
   background: var(--danger-soft);
   color: var(--danger);
   padding: 10px 14px;
-  border-left: 2px solid var(--danger);
+  border-left: 3px solid var(--danger);
   margin-bottom: 18px;
   font-size: 13px;
-  font-family: var(--font-sans);
+  border-radius: 0 var(--radius) var(--radius) 0;
 }
 
 
@@ -174,7 +183,7 @@
 .sidebar {
   width: var(--sidebar-width);
   background: var(--ink);
-  color: var(--paper);
+  color: var(--on-dark);
   height: 100vh;
   position: fixed;
   left: 0;
@@ -182,39 +191,43 @@
   display: flex;
   flex-direction: column;
   z-index: 40;
-  border-right: 1px solid rgba(255, 253, 248, 0.08);
+  border-right: 1px solid var(--on-dark-fade);
 }
 
 .sidebar-header {
   padding: 28px 24px 22px;
-  border-bottom: 1px solid rgba(255, 253, 248, 0.08);
+  border-bottom: 1px solid var(--on-dark-fade);
 }
 .sidebar-logo {
   display: inline-block;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--paper);
+  background: var(--accent);
   color: var(--ink);
   font-family: var(--font-display);
+  font-variation-settings: 'opsz' 24, 'SOFT' 100, 'WONK' 1;
   font-size: 22px;
-  line-height: 32px;
+  line-height: 34px;
   text-align: center;
   font-style: italic;
+  font-weight: 500;
   margin-bottom: 10px;
 }
 .sidebar-logo::before { content: "C"; }
 .sidebar-header h2 {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-variation-settings: 'opsz' 60, 'SOFT' 40, 'WONK' 0;
+  font-weight: 500;
   font-size: 22px;
-  letter-spacing: 0;
-  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--on-dark);
 }
 .sidebar-header h2::after {
   content: " — Registry";
-  color: var(--muted-2);
+  color: var(--on-dark-mute);
   font-style: italic;
+  font-weight: 400;
 }
 
 .sidebar-user {
@@ -222,36 +235,38 @@
   align-items: center;
   gap: 12px;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 253, 248, 0.08);
+  border-bottom: 1px solid var(--on-dark-fade);
 }
 .user-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--accent);
-  color: var(--paper);
+  background: var(--primary);
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 500;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 .user-info { min-width: 0; }
 .user-name {
   font-size: 14px;
   font-weight: 500;
   text-transform: capitalize;
-  color: var(--paper);
+  color: var(--on-dark);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .user-role {
   font-size: 11px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted-2);
+  color: var(--on-dark-mute);
   margin-top: 2px;
 }
 
@@ -265,9 +280,9 @@
 .sidebar-nav::before {
   content: "Sections";
   font-size: 10px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--muted-2);
+  color: var(--on-dark-mute);
   padding: 0 12px 10px;
 }
 
@@ -277,17 +292,17 @@
   gap: 10px;
   padding: 10px 14px;
   border-radius: var(--radius);
-  color: rgba(244, 240, 230, 0.72);
+  color: var(--on-dark-mute);
   font-size: 14px;
+  font-weight: 500;
   transition: background 0.15s ease, color 0.15s ease;
   border: 0;
-  border-bottom: 0;
 }
-.nav-link:hover { background: rgba(244, 240, 230, 0.06); color: var(--paper); }
+.nav-link:hover { background: var(--on-dark-fade); color: var(--on-dark); border-bottom-color: transparent; }
 .nav-link.active {
-  background: rgba(244, 240, 230, 0.09);
-  color: var(--paper);
-  font-weight: 500;
+  background: var(--on-dark-fade);
+  color: var(--on-dark);
+  font-weight: 600;
 }
 .nav-link.active::before {
   content: "";
@@ -301,7 +316,7 @@
 
 .sidebar-footer {
   padding: 16px 12px 24px;
-  border-top: 1px solid rgba(255, 253, 248, 0.08);
+  border-top: 1px solid var(--on-dark-fade);
 }
 .logout-btn {
   display: flex;
@@ -310,17 +325,18 @@
   padding: 10px 14px;
   border-radius: var(--radius);
   background: transparent;
-  border: 1px solid rgba(244, 240, 230, 0.14);
-  color: rgba(244, 240, 230, 0.72);
+  border: 1px solid var(--on-dark-fade);
+  color: var(--on-dark-mute);
   width: 100%;
   font-size: 13px;
   letter-spacing: 0.02em;
+  font-weight: 500;
   transition: all 0.15s ease;
 }
 .logout-btn:hover {
-  border-color: rgba(168, 58, 47, 0.5);
-  color: #EFC0B7;
-  background: rgba(168, 58, 47, 0.08);
+  border-color: rgba(185, 50, 35, 0.55);
+  color: #F0B8AF;
+  background: rgba(185, 50, 35, 0.10);
 }
 
 
@@ -345,13 +361,14 @@
 }
 .page-header h1 {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 52px;
+  font-variation-settings: 'opsz' 120, 'SOFT' 50, 'WONK' 0;
+  font-weight: 500;
+  font-size: 54px;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--ink);
 }
-.page-header h1 em, .page-header h1 i { color: var(--accent); }
+.page-header h1 em, .page-header h1 i { color: var(--primary); font-style: italic; }
 .page-header p {
   max-width: 320px;
   color: var(--muted);
@@ -399,7 +416,7 @@
 .empty-icon::before { content: "—"; font-size: 20px; }
 .empty-state h3 {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 500;
   font-size: 26px;
   color: var(--ink);
   margin-bottom: 6px;
@@ -422,14 +439,15 @@
 }
 .welcome-section h1 {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 56px;
+  font-variation-settings: 'opsz' 120, 'SOFT' 50, 'WONK' 0;
+  font-weight: 500;
+  font-size: 58px;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--ink);
   margin-bottom: 10px;
 }
-.welcome-section h1::first-letter { font-style: italic; color: var(--accent); }
+.welcome-section h1::first-letter { font-style: italic; color: var(--primary); }
 .welcome-section p {
   color: var(--muted);
   font-size: 15px;
@@ -443,6 +461,7 @@
   margin-bottom: 56px;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+  background: var(--card);
 }
 .stat-card {
   padding: 28px 24px;
@@ -454,7 +473,7 @@
   transition: background 0.2s ease;
 }
 .stat-card:last-child { border-right: none; }
-.stat-card:hover { background: rgba(180, 85, 42, 0.04); }
+.stat-card:hover { background: var(--paper); }
 
 .stat-icon {
   width: 8px;
@@ -462,17 +481,18 @@
   border-radius: 50%;
   background: var(--muted-2);
 }
-.courses-stat .stat-icon { background: var(--primary); }
+.courses-stat .stat-icon     { background: var(--primary); }
 .assignments-stat .stat-icon { background: var(--accent); }
-.marks-stat .stat-icon { background: #C69A3F; }
-.profile-stat .stat-icon { background: var(--muted); }
+.marks-stat .stat-icon       { background: var(--success); }
+.profile-stat .stat-icon     { background: var(--muted); }
 
 .stat-info h3 {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 52px;
+  font-variation-settings: 'opsz' 96, 'SOFT' 40, 'WONK' 0;
+  font-weight: 500;
+  font-size: 54px;
   line-height: 0.95;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--ink);
   word-break: break-word;
 }
@@ -485,24 +505,20 @@
   color: var(--ink);
   word-break: break-all;
 }
-.marks-stat .stat-info h3 {
-  font-style: italic;
-}
+.marks-stat .stat-info h3 { font-style: italic; }
 .stat-info p {
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.quick-links {
-  padding-top: 8px;
-}
+.quick-links { padding-top: 8px; }
 .quick-links h2 {
   font-family: var(--font-sans);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
@@ -514,6 +530,10 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 .quick-link-card {
   display: flex;
@@ -522,27 +542,27 @@
   padding: 22px 24px;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--line);
   border-right: 1px solid var(--line);
   transition: background 0.15s ease;
   color: var(--ink);
 }
 .quick-link-card:last-child { border-right: none; }
-.quick-link-card:hover { background: var(--paper-2); color: var(--ink); }
+.quick-link-card:hover { background: var(--paper); color: var(--ink); border-bottom-color: transparent; }
 .link-icon { display: none; }
 .link-text {
   font-family: var(--font-display);
+  font-variation-settings: 'opsz' 40, 'SOFT' 40;
   font-size: 22px;
-  font-weight: 400;
-  letter-spacing: -0.005em;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 .link-arrow {
   font-family: var(--font-display);
   font-size: 22px;
-  color: var(--accent);
+  color: var(--primary);
   transition: transform 0.2s ease;
 }
-.quick-link-card:hover .link-arrow { transform: translateX(6px); }
+.quick-link-card:hover .link-arrow { transform: translateX(6px); color: var(--accent); }
 
 
 /* ============================================================
@@ -553,6 +573,7 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 0;
   border-top: 1px solid var(--line);
+  background: var(--card);
 }
 .course-card {
   background: transparent;
@@ -565,13 +586,13 @@
   transition: background 0.15s ease;
   position: relative;
 }
-.course-card:hover { background: var(--paper-2); }
+.course-card:hover { background: var(--paper); }
 .course-icon {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
@@ -592,10 +613,11 @@
 .course-details { display: flex; flex-direction: column; gap: 10px; }
 .course-details h3 {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-variation-settings: 'opsz' 40, 'SOFT' 40;
+  font-weight: 500;
   font-size: 24px;
   line-height: 1.15;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   color: var(--ink);
 }
 .course-code-badge {
@@ -622,6 +644,7 @@
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--line);
+  background: var(--card);
 }
 .assignment-card {
   background: transparent;
@@ -633,7 +656,7 @@
   border-bottom: 1px solid var(--line);
   transition: background 0.15s ease;
 }
-.assignment-card:hover { background: var(--paper-2); }
+.assignment-card:hover { background: var(--paper); }
 .assignment-type-indicator {
   width: 44px;
   height: 44px;
@@ -642,17 +665,19 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 500;
   font-size: 22px;
-  color: var(--paper);
+  color: #FFFFFF;
   flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 .assignment-info { min-width: 0; }
 .assignment-info h3 {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-variation-settings: 'opsz' 40, 'SOFT' 40;
+  font-weight: 500;
   font-size: 24px;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   color: var(--ink);
   margin-bottom: 10px;
   line-height: 1.2;
@@ -671,9 +696,9 @@
 .assignment-meta { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
 .assignment-type-badge {
   padding: 3px 10px;
-  color: var(--paper);
+  color: #FFFFFF;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 999px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -701,8 +726,9 @@
 }
 .count-number {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 36px;
+  font-variation-settings: 'opsz' 96, 'SOFT' 30;
+  font-weight: 500;
+  font-size: 38px;
   line-height: 1;
   color: var(--ink);
 }
@@ -712,6 +738,7 @@
   text-transform: uppercase;
   color: var(--muted);
   margin-top: 4px;
+  font-weight: 600;
 }
 
 
@@ -726,6 +753,7 @@
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--card);
+  overflow: hidden;
 }
 .summary-card {
   padding: 32px 28px;
@@ -738,15 +766,16 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 12px;
 }
 .summary-value {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 64px;
+  font-variation-settings: 'opsz' 144, 'SOFT' 40;
+  font-weight: 500;
+  font-size: 66px;
   line-height: 0.95;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin-bottom: 10px;
 }
 .summary-subtitle {
@@ -768,7 +797,7 @@
   padding: 16px 20px;
   text-align: left;
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
@@ -783,26 +812,28 @@
 }
 .marks-table tr:last-child td { border-bottom: none; }
 .marks-table tbody tr { transition: background 0.15s ease; }
-.marks-table tbody tr:hover td { background: var(--paper-2); }
+.marks-table tbody tr:hover td { background: var(--paper); }
 
 .course-name-cell {
   font-family: var(--font-display);
   font-size: 20px;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.01em;
+  font-weight: 500;
 }
 .marks-cell {
   font-family: var(--font-display);
   font-size: 22px;
   color: var(--ink);
+  font-weight: 500;
 }
-.marks-cell strong { font-weight: 400; }
+.marks-cell strong { font-weight: 500; }
 
 .exam-type-badge {
   padding: 3px 10px;
   background: var(--paper-2);
   color: var(--ink-2);
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border-radius: 999px;
@@ -811,9 +842,9 @@
 .percentage-badge, .status-badge {
   display: inline-block;
   padding: 3px 10px;
-  color: var(--paper);
+  color: #FFFFFF;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border-radius: 999px;
@@ -828,9 +859,10 @@
   .stat-card:nth-child(2) { border-right: none; }
   .stat-card:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
   .links-grid { grid-template-columns: 1fr; }
-  .quick-link-card { border-right: none; }
+  .quick-link-card { border-right: none; border-bottom: 1px solid var(--line); }
+  .quick-link-card:last-child { border-bottom: none; }
   .page-content { padding: 40px 32px 60px; }
-  .welcome-section h1, .page-header h1 { font-size: 40px; }
+  .welcome-section h1, .page-header h1 { font-size: 42px; }
   .performance-summary { grid-template-columns: 1fr; }
   .summary-card { border-right: none; border-bottom: 1px solid var(--line); }
   .summary-card:last-child { border-bottom: none; }
@@ -848,7 +880,7 @@
     padding: 12px 16px;
     gap: 16px;
     border-right: 0;
-    border-bottom: 1px solid rgba(255, 253, 248, 0.08);
+    border-bottom: 1px solid var(--on-dark-fade);
   }
   .sidebar-header, .sidebar-user, .sidebar-footer { border: 0; padding: 0; }
   .sidebar-header { flex-shrink: 0; }
