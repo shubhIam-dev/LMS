@@ -28,10 +28,11 @@ LMS/
 │   └── learn.md      📘 Deep-dive teaching guide for the frontend
 │
 ├── fullflow.md       End-to-end walkthrough of a real request
+├── DATABASE.md       📘 Every collection, every relationship, curl walkthrough of a full flow, roadmap
 └── README.md         You are here
 ```
 
-The two `learn.md` files are the main teaching material. Start there.
+**Reading order:** `README.md` (this file) → `DATABASE.md` for the data model → `backend/learn.md` and `frontend/learn.md` for a code tour.
 
 ---
 
@@ -39,17 +40,88 @@ The two `learn.md` files are the main teaching material. Start there.
 
 ### Prerequisites
 - **Node.js 18+** and **npm**
-- A **MongoDB** connection string (a free MongoDB Atlas cluster works — see `backend/.env.example`)
+- A **MongoDB** database — either a free Atlas cluster (recommended, walkthrough below) or MongoDB running locally
 
-### Backend
+### Step 1 — Set up MongoDB (your own free cluster)
+
+You have two options. Pick one.
+
+#### Option A: MongoDB Atlas (free cloud tier — recommended)
+
+Atlas gives you a hosted MongoDB you can reach from anywhere, and the free **M0** tier is more than enough for this project.
+
+1. **Create an account** at https://www.mongodb.com/cloud/atlas/register.
+2. **Create a project.** Name it whatever you like (e.g. `lms-learning`).
+3. **Deploy a cluster:**
+   - Click **"Build a Database"**.
+   - Choose **M0 (Free)**.
+   - Pick any cloud provider and the region closest to you.
+   - Cluster name: leave the default or rename to `Cluster0`.
+   - Click **"Create Deployment"**. Provisioning takes 1–3 minutes.
+4. **Create a database user:**
+   - When prompted (or under **Security → Database Access**), click **"Add New Database User"**.
+   - Auth method: **Password**.
+   - Choose a username (e.g. `lmsuser`) and a **strong password**. Save both somewhere safe — you'll paste them into the connection string in a moment.
+   - Built-in role: **"Read and write to any database"**.
+   - Click **"Add User"**.
+5. **Whitelist your IP:**
+   - Under **Security → Network Access**, click **"Add IP Address"**.
+   - For development, click **"Allow Access from Anywhere"** (`0.0.0.0/0`). This is fine for a learning project — for production you'd whitelist specific IPs only.
+   - Click **"Confirm"**.
+6. **Get your connection string:**
+   - Go back to **Database → Clusters**, click **"Connect"** on your cluster.
+   - Choose **"Drivers"** (or "Connect your application").
+   - Driver: **Node.js**, Version: **latest**.
+   - Copy the connection string. It looks like:
+     ```
+     mongodb+srv://<username>:<password>@cluster0.abcde.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+     ```
+7. **Fill in the placeholders:**
+   - Replace `<username>` with your DB username.
+   - Replace `<password>` with the DB password (URL-encode any special characters — `@` becomes `%40`, `#` becomes `%23`, etc.).
+   - Optionally add a database name in the URL before the `?`:
+     ```
+     mongodb+srv://lmsuser:mySecret%40123@cluster0.abcde.mongodb.net/lms?retryWrites=true&w=majority&appName=Cluster0
+     ```
+     The trailing `/lms` tells Mongoose to use a database named `lms`. If you omit it, you'll get a default database — that's fine too.
+8. **Paste it into `.env`** in the next step.
+
+#### Option B: Local MongoDB
+
+If you'd rather not use Atlas, install MongoDB Community Edition locally. On macOS:
+```bash
+brew tap mongodb/brew
+brew install mongodb-community
+brew services start mongodb-community
+```
+Your connection string will then be:
+```
+mongodb://127.0.0.1:27017/lms
+```
+
+### Step 2 — Backend
+
 ```bash
 cd backend
 npm install
-cp .env.example .env    # then edit .env with your MongoDB URI
+cp .env.example .env    # then edit .env with the connection string from Step 1
 npm start               # runs node server.js on http://localhost:9000
 ```
 
-### Frontend
+Your `.env` should look like:
+```
+MONGODB_URI=mongodb+srv://lmsuser:mySecret%40123@cluster0.abcde.mongodb.net/lms?retryWrites=true&w=majority&appName=Cluster0
+PORT=9000
+```
+
+If the server prints `Connected TO DataBase` you're good. If it prints an error, check:
+- Password URL-encoded? (`@` → `%40`, `#` → `%23`)
+- IP whitelisted in Atlas?
+- Username / password typed correctly?
+- Cluster still provisioning? (wait ~2 min)
+
+### Step 3 — Frontend
+
 ```bash
 cd frontend
 npm install
@@ -58,7 +130,17 @@ npm run dev             # runs Vite on http://localhost:5173
 
 Open http://localhost:5173 in your browser. The frontend expects the backend at `http://localhost:9000` — if you change that, edit `frontend/src/services/api.js`.
 
-> **First time?** You'll need to seed a user before you can log in. Send a `POST` to `http://localhost:9000/user/addUser` with a JSON body `{ "name": "You", "email": "you@x.com", "password": "test", "phoneNumber": 9999999999 }` from Postman / Thunder Client / `curl`.
+### Step 4 — Seed a first user so you can log in
+
+There's no register page yet. Create a user by hitting the backend directly with `curl`, Postman, or Thunder Client:
+```bash
+curl -X POST http://localhost:9000/user/addUser \
+  -H "Content-Type: application/json" \
+  -d '{"name":"You","email":"you@x.com","password":"test","phoneNumber":9999999999,"role":"student"}'
+```
+Now log in on http://localhost:5173 with phone `9999999999` and password `test`.
+
+For a full walk-through of creating courses, questions, assignments, submissions, and grades via `curl`, see **[DATABASE.md](DATABASE.md) §5**.
 
 ---
 
