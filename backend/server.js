@@ -9,6 +9,8 @@ let userRoutes = require('./routes/userRoutes');
 let courseRoutes = require('./routes/courseRoutes.js');
 let assignmentsRoutes = require('./routes/assignmentsRoutes.js');
 let marksRoutes = require('./routes/marksRoutes.js');
+let questionRoutes = require('./routes/questionRoutes.js');
+let submissionRoutes = require('./routes/submissionRoutes.js');
 
 // Global error handlers to prevent silent crashes
 process.on('uncaughtException', (err) => {
@@ -40,6 +42,8 @@ app.use('/course', courseRoutes);
 app.use('/user', userRoutes);
 app.use('/assignments', assignmentsRoutes);
 app.use('/marks', marksRoutes);
+app.use('/questions', questionRoutes);
+app.use('/submissions', submissionRoutes);
 
 app.get('/', (req, res) => {
     res.send('🎓 College ERP Backend is working!');
