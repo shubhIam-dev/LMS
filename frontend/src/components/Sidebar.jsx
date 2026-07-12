@@ -16,11 +16,14 @@ function Sidebar() {
   const role = useSelector(selectRole);
   const dispatch = useDispatch();
 
+  const isStaff = role === "teacher" || role === "superadmin";
   const navItems = [
     { path: "/dashboard", label: "Dashboard" },
     { path: "/courses", label: "Courses" },
     { path: "/assignments", label: "Assignments" },
     { path: "/marks", label: "Marks" },
+    // Teachers and superadmins get the create/manage console.
+    ...(isStaff ? [{ path: "/manage", label: "Teacher Console" }] : []),
   ];
 
   return (

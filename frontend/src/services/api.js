@@ -80,11 +80,39 @@ export const userApi = {
 export const courseApi = {
   getAllCourses: () => callApi("/course/getAllCourses"),
   getCourseById: (id) => callApi(`/course/getCourseById?_id=${encodeURIComponent(id)}`),
+
+  // staff only
+  addCourse: (data) =>
+    callApi("/course/addCourse", { method: "POST", body: JSON.stringify(data) }),
+  enrollStudent: (courseId, studentId) =>
+    callApi("/course/enrollStudent", {
+      method: "POST",
+      body: JSON.stringify({ courseId, studentId }),
+    }),
+};
+
+// ❓ QUESTIONS (question bank)
+export const questionApi = {
+  getAll: () => callApi("/questions/getAllQuestions"),
+  // staff only
+  add: (data) =>
+    callApi("/questions/addQuestion", { method: "POST", body: JSON.stringify(data) }),
 };
 
 // 📝 ASSIGNMENTS
 export const assignmentApi = {
   getAllAssignments: () => callApi("/assignments/getAllAssignments"),
+  getByCourse: (courseId) =>
+    callApi(`/assignments/getByCourse?courseId=${encodeURIComponent(courseId)}`),
+
+  // staff only
+  addAssignment: (data) =>
+    callApi("/assignments/addAssignment", { method: "POST", body: JSON.stringify(data) }),
+  addQuestionsToAssignment: (assignmentId, questionIds) =>
+    callApi("/assignments/addQuestionsToAssignment", {
+      method: "POST",
+      body: JSON.stringify({ assignmentId, questionIds }),
+    }),
 };
 
 // 📊 MARKS

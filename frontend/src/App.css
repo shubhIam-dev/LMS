@@ -13,6 +13,7 @@
   --ic-logout: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/%3E%3Cpath d='m16 17 5-5-5-5'/%3E%3Cpath d='M21 12H9'/%3E%3C/svg%3E");
   --ic-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E");
   --ic-inbox: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E");
+  --ic-plus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E");
 }
 
 /* Reusable helper: mask an icon over a colored surface */
@@ -286,6 +287,7 @@
 .nav-link[href="/courses"]     { --ic: var(--ic-book); }
 .nav-link[href="/assignments"] { --ic: var(--ic-clipboard); }
 .nav-link[href="/marks"]       { --ic: var(--ic-award); }
+.nav-link[href="/manage"]      { --ic: var(--ic-plus); }
 .nav-link:hover { background: rgba(255,255,255,0.06); color: #fff; }
 .nav-link.active {
   background: linear-gradient(140deg, var(--primary-600), var(--violet-600));
@@ -664,12 +666,157 @@
 
 
 /* ============================================================================
+   TEACHER CONSOLE (Manage page)
+   ============================================================================ */
+.console-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  margin-bottom: 24px;
+}
+.console-tab {
+  padding: 9px 18px;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-sm);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all 0.15s ease;
+}
+.console-tab:hover { color: var(--ink); }
+.console-tab.active {
+  background: linear-gradient(140deg, var(--primary-600), var(--violet-600));
+  color: #fff;
+  box-shadow: var(--shadow-primary);
+}
+
+.console-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.console-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+}
+.console-card.wide { max-width: 760px; }
+.console-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.count-pill {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-700);
+  background: var(--primary-50);
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field-label { font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.field input,
+.field select,
+.field textarea {
+  padding: 11px 13px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-size: 14.5px;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  resize: vertical;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 4px var(--primary-100);
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.console-btn {
+  margin-top: 4px;
+  padding: 12px 20px;
+  background: var(--primary-600);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: var(--shadow-primary);
+  transition: background 0.15s ease, transform 0.08s ease;
+}
+.console-btn:hover { background: var(--primary-700); }
+.console-btn:active { transform: translateY(1px); }
+.console-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.console-flash { margin-top: 12px; font-size: 13.5px; font-weight: 600; }
+.console-flash.ok { color: var(--success); }
+.console-flash.err { color: var(--danger); }
+
+.console-list { list-style: none; display: flex; flex-direction: column; gap: 2px; max-height: 420px; overflow-y: auto; }
+.console-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+}
+.console-list li:nth-child(odd) { background: var(--surface-2); }
+.console-list li strong { font-weight: 600; color: var(--ink); min-width: 0; }
+.console-list li span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.console-list li.muted { color: var(--muted); justify-content: center; }
+.muted { color: var(--muted); }
+
+.question-picker {
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+}
+.pick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.pick-row:hover { background: var(--surface-2); }
+.pick-row.on { background: var(--primary-50); }
+.pick-row input { width: 16px; height: 16px; accent-color: var(--primary-600); flex-shrink: 0; }
+.pick-text { flex: 1; font-size: 13.5px; color: var(--ink-2); }
+.pick-meta { font-size: 11px; font-weight: 700; color: var(--muted); }
+
+/* ============================================================================
    RESPONSIVE
    ============================================================================ */
 @media (max-width: 1000px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .links-grid { grid-template-columns: 1fr; }
   .performance-summary { grid-template-columns: 1fr; }
+  .console-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 720px) {
