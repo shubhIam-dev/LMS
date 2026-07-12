@@ -5,12 +5,17 @@ let {
     getSubmissionsByAssignment,
     gradeSubmission
 } = require("../controllers/submissionController.js");
+let { authenticate, authorize } = require("../middleware/auth");
 
 const router = express.Router();
 
-router.post("/submit",              submitAssignment);
-router.get("/getByStudent",         getSubmissionsByStudent);
-router.get("/getByAssignment",      getSubmissionsByAssignment);
-router.post("/grade",               gradeSubmission);
+// A signed-in user submits their own work and views their own submissions.
+router.post("/submit", authenticate, submitAssignment);
+router.get("/getByStudent", authenticate, getSubmissionsByStudent);
+
+// Reviewing everyone's submissions and grading is staff only.
+const staff = [authenticate, authorize("teacher", "superadmin")];
+router.get("/getByAssignment", staff, getSubmissionsByAssignment);
+router.post("/grade", staff, gradeSubmission);
 
 module.exports = router;

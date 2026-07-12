@@ -45,14 +45,17 @@ async function seed() {
     ]);
 
     // ---------- 1. USERS ----------
+    // Use User.create (NOT insertMany) so the pre-save hook hashes each password.
     console.log("→ Inserting users…");
-    const [rao, mehta, aria, bilal, chitra] = await User.insertMany([
+    const [admin, rao, mehta, aria, bilal, chitra] = await User.create([
+        { name: "Dr. Admin",   email: "admin@x.co", password: "admin", phoneNumber: 9000000000, role: "superadmin" },
         { name: "Prof. Rao",   email: "rao@x.co",   password: "teach", phoneNumber: 9000000001, role: "teacher" },
         { name: "Prof. Mehta", email: "mehta@x.co", password: "teach", phoneNumber: 9000000002, role: "teacher" },
         { name: "Aria",   email: "aria@x.co",   password: "demo", phoneNumber: 9999999001, role: "student" },
         { name: "Bilal",  email: "bilal@x.co",  password: "demo", phoneNumber: 9999999002, role: "student" },
         { name: "Chitra", email: "chitra@x.co", password: "demo", phoneNumber: 9999999003, role: "student" }
     ]);
+    void admin;
 
     // ---------- 2. COURSES ----------
     console.log("→ Inserting courses…");
@@ -114,10 +117,13 @@ async function seed() {
     ]);
 
     console.log("\n✅ Seed complete. Log in on the frontend with any of these:\n");
-    console.log("   Aria    → phone 9999999001   password demo");
-    console.log("   Bilal   → phone 9999999002   password demo");
-    console.log("   Chitra  → phone 9999999003   password demo\n");
-    console.log("   (Teachers exist too — Rao/Mehta — for future teacher-side pages.)\n");
+    console.log("   ROLE         PHONE         PASSWORD");
+    console.log("   superadmin   9000000000    admin");
+    console.log("   teacher      9000000001    teach     (Prof. Rao)");
+    console.log("   teacher      9000000002    teach     (Prof. Mehta)");
+    console.log("   student      9999999001    demo      (Aria)");
+    console.log("   student      9999999002    demo      (Bilal)");
+    console.log("   student      9999999003    demo      (Chitra)\n");
 
     await mongoose.disconnect();
 }

@@ -3,10 +3,17 @@
 
 import { NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectUser, logout } from "../store/authSlice";
+import { selectUser, selectRole, logout } from "../store/authSlice";
+
+const ROLE_LABEL = {
+  student: "Student",
+  teacher: "Teacher",
+  superadmin: "Super Admin",
+};
 
 function Sidebar() {
   const user = useSelector(selectUser);
+  const role = useSelector(selectRole);
   const dispatch = useDispatch();
 
   const navItems = [
@@ -28,8 +35,8 @@ function Sidebar() {
           {user?.name?.[0]?.toUpperCase() || "?"}
         </div>
         <div className="user-info">
-          <p className="user-name">{user?.name || "Student"}</p>
-          <p className="user-role">Student</p>
+          <p className="user-name">{user?.name || "User"}</p>
+          <p className="user-role">{ROLE_LABEL[role] || "Student"}</p>
         </div>
       </div>
 

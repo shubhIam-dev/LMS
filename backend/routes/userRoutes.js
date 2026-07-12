@@ -1,13 +1,24 @@
-// let Router = require('express').Router
-let express=require("express")
-// import { addUser } from '../controllers/users.controllers.js';
-let {addUser,getUser, addUsers}=require("../controllers/users.controllers");
+let express = require("express");
+let { addUser, getUser, addUsers } = require("../controllers/users.controllers");
+let { register, login, me, adminCreateUser } = require("../controllers/authController");
+let { authenticate, authorize } = require("../middleware/auth");
 
-// console.log(addUser)
 const router = express.Router();
 
-router.post('/addUser',addUser)
-router.get('/getUser',getUser)
-router.post('/addUsers',addUsers)
-module.exports = router;
+// ---- Public auth endpoints ----
+router.post('/register', register);   // self-signup (always creates a student)
+router.post('/login', login);         // returns a JWT
 
+// ---- Authenticated ----
+router.get('/me', authenticate, me);  // current user from the token
+
+// ---- Superadmin only ----
+// Minting teachers / superadmins, and bulk inserts, are privileged actions.
+router.post('/adminCreateUser', authenticate, authorize("superadmin"), adminCreateUser);
+router.post('/addUsers', authenticate, authorize("superadmin"), addUsers);
+
+// ---- Legacy (kept for backwards-compat with older docs/scripts) ----
+router.post('/addUser', addUser);
+router.get('/getUser', getUser);
+
+module.exports = router;

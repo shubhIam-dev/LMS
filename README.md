@@ -30,10 +30,11 @@ LMS/
 ├── fullflow.md       End-to-end walkthrough of a real request
 ├── DATABASE.md       📘 Every collection, every relationship, curl walkthrough of a full flow, roadmap
 ├── flowofbackend.md  📘 A teacher's journey: create course → questions → assignment → enroll → grade
+├── AUTH.md           📘 Roles (student / teacher / superadmin), JWT auth, and the permission matrix
 └── README.md         You are here
 ```
 
-**Reading order:** `README.md` (this file) → `DATABASE.md` for the data model → `flowofbackend.md` for how a teacher drives it → `backend/learn.md` and `frontend/learn.md` for a code tour.
+**Reading order:** `README.md` (this file) → `AUTH.md` for roles & login → `DATABASE.md` for the data model → `flowofbackend.md` for how a teacher drives it → `backend/learn.md` and `frontend/learn.md` for a code tour.
 
 ---
 
@@ -154,23 +155,25 @@ You'll see something like:
 
 ✅ Seed complete. Log in on the frontend with any of these:
 
-   Aria    → phone 9999999001   password demo
-   Bilal   → phone 9999999002   password demo
-   Chitra  → phone 9999999003   password demo
+   ROLE         PHONE         PASSWORD
+   superadmin   9000000000    admin
+   teacher      9000000001    teach     (Prof. Rao)
+   student      9999999001    demo      (Aria)
+   ...
 ```
 
-Open the frontend, log in as any of the demo students, and you'll see a fully-populated dashboard.
+The seeder creates **one of each role** — a superadmin, two teachers, three students. Log in as any of them and you'll see a fully-populated dashboard with their role shown in the sidebar. See **[AUTH.md](AUTH.md)** for what each role can do.
 
 > **Warning:** `npm run seed` **wipes all six collections** in your database before inserting. Run it on an empty database or a scratch one — not on real data you care about.
 
-Prefer to make your own user by hand instead? Send this to the backend:
+Prefer to make your own account by hand instead? Register a student (passwords are hashed automatically):
 ```bash
-curl -X POST http://localhost:9000/user/addUser \
+curl -X POST http://localhost:9000/user/register \
   -H "Content-Type: application/json" \
-  -d '{"name":"You","email":"you@x.com","password":"test","phoneNumber":9999999999,"role":"student"}'
+  -d '{"name":"You","email":"you@x.com","password":"test","phoneNumber":9999999999}'
 ```
 
-For a full walkthrough of creating courses, questions, assignments, submissions, and grades via `curl`, see **[DATABASE.md](DATABASE.md) §5**.
+For roles, login, and the full permission matrix, see **[AUTH.md](AUTH.md)**. For a full walkthrough of creating courses, questions, assignments, submissions, and grades via `curl`, see **[DATABASE.md](DATABASE.md) §5**.
 
 ---
 
@@ -186,8 +189,9 @@ For a full walkthrough of creating courses, questions, assignments, submissions,
 | Backend framework | **Express 5** | HTTP routing + middleware |
 | Database | **MongoDB** | Document store — flexible for teaching |
 | ODM | **Mongoose** | Schemas + query helpers for Mongo |
+| Auth | **jsonwebtoken + bcryptjs** | JWT login + hashed passwords, role-based access ([AUTH.md](AUTH.md)) |
 | Config | **dotenv** | Loads secrets from `.env` |
-| Fonts | **Fraunces + DM Sans** (Google Fonts) | Display serif + UI sans |
+| Fonts | **Plus Jakarta Sans + Inter** (Google Fonts) | Headings + UI |
 
 ---
 
