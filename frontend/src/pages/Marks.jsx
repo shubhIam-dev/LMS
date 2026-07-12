@@ -2,11 +2,12 @@
 // This is like your online report card - shows all your scores!
 
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { marksApi } from "../services/api";
-import { useAuth } from "../context/AuthContext";
+import { selectUser } from "../store/authSlice";
 
 function Marks() {
-  const { user } = useAuth();
+  const user = useSelector(selectUser);
   const [marks, setMarks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

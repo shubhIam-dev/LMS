@@ -1,102 +1,102 @@
-/* 🎨 Global Styles - These are like the paint and wallpaper for our entire app */
-/* Everything here applies to ALL pages automatically */
+/* Fonts — Fraunces (variable serif, expressive display) + DM Sans (contemporary geometric UI sans) */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
-/* 🌈 Color Theme - Think of these as our brand colors */
+/*
+  COLOR SYSTEM — Complementary scheme (color theory)
+  --------------------------------------------------
+  Cobalt (H≈225°)  +  Amber (H≈41°)  =  ~184° apart on the wheel.
+  That's the textbook complementary pair — Van Gogh's starry-sky-and-sunflowers.
+  Cool neutral background lets the warm accent pop without shouting.
+*/
 :root {
-  /* Primary Colors - The main colors of our ERP portal */
-  --primary: #4f46e5;        /* Indigo - Main brand color */
-  --primary-light: #818cf8;  /* Lighter indigo for hover effects */
-  --primary-dark: #3730a3;   /* Darker indigo for active states */
-  
-  /* Background Colors */
-  --bg-main: #f0f2f5;        /* Light gray background for the page */
-  --bg-white: #ffffff;        /* White background for cards */
-  --bg-sidebar: #1e1b4b;     /* Dark purple for the sidebar */
-  --bg-sidebar-hover: #312e81; /* Slightly lighter for hover effects */
-  
-  /* Text Colors */
-  --text-primary: #1f2937;   /* Dark gray for main text */
-  --text-secondary: #6b7280; /* Medium gray for less important text */
-  --text-light: #9ca3af;     /* Light gray for hints */
-  --text-white: #ffffff;     /* White text for dark backgrounds */
-  
-  /* Status Colors - For showing success, warning, errors */
-  --success: #10b981;        /* Green - for "all good" messages */
-  --warning: #f59e0b;        /* Yellow - for "be careful" messages */
-  --error: #ef4444;          /* Red - for error messages */
-  --info: #3b82f6;           /* Blue - for informational messages */
-  
-  /* Border & Shadow */
-  --border: #e5e7eb;         /* Light border color */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  
+  /* Neutrals — cool ivory paper, deep midnight ink */
+  --paper:        #F1F3F7;
+  --paper-2:      #E4E8F0;
+  --card:         #FFFFFF;
+  --ink:          #0C1830;
+  --ink-2:        #1F2A44;
+  --muted:        #556278;
+  --muted-2:      #8E96A8;
+  --line:         #D7DCE7;
+  --line-strong:  #B4BCCC;
+
+  /* Sidebar-on-dark palette (paper hue at various alphas) */
+  --on-dark:      rgba(241, 243, 247, 0.94);
+  --on-dark-mute: rgba(241, 243, 247, 0.62);
+  --on-dark-fade: rgba(241, 243, 247, 0.10);
+
+  /* Complementary hues */
+  --primary:      #1E4BD8;   /* cobalt — the workhorse */
+  --primary-2:    #3661E4;
+  --primary-soft: #D6E0FA;
+
+  --accent:       #E3A008;   /* amber — cobalt's complement */
+  --accent-2:     #F1B62A;
+  --accent-soft:  #F9E6B4;
+
+  /* Status */
+  --danger:       #B93223;
+  --danger-soft:  #F5D4CB;
+  --success:      #237A5C;
+  --success-soft: #C9E4D9;
+
+  /* Typography */
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Georgia', serif;
+  --font-sans:    'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
   /* Layout */
-  --sidebar-width: 260px;    /* How wide the sidebar is */
-  --header-height: 64px;     /* Height of the header */
-  
-  /* Font settings */
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'Fira Code', 'Cascadia Code', Consolas, monospace;
-  
-  /* Border radius */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --sidebar-width: 264px;
+  --radius:        6px;
+  --radius-lg:     10px;
 }
 
-/* 🌍 Base styles for the entire page */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  line-height: 1.6;
+  background-color: var(--paper);
+  color: var(--ink);
+  line-height: 1.55;
+  font-size: 15px;
+  font-variation-settings: 'opsz' 14;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* 🔗 Link styles */
+/* Fraunces display defaults — soft optical size at large sizes, slight wonk */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96, 'SOFT' 30, 'WONK' 0;
+  font-weight: 400;
+  color: var(--ink);
+}
+
 a {
   color: var(--primary);
   text-decoration: none;
-  transition: color 0.2s;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
+a:hover { color: var(--primary-2); border-bottom-color: var(--primary); }
 
-a:hover {
-  color: var(--primary-light);
-}
-
-/* 📝 Form elements base styles */
-input, button {
+button, input, select, textarea {
   font-family: inherit;
+  font-size: inherit;
+  color: inherit;
 }
+button { cursor: pointer; }
+input:focus, button:focus, select:focus, textarea:focus { outline: none; }
 
-/* 🖱️ Remove default focus outline and add custom one */
-input:focus, button:focus {
-  outline: none;
-}
+::selection { background: var(--accent-soft); color: var(--ink); }
 
-/* 📜 Scrollbar styling for better look */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: var(--text-light);
-  border-radius: 3px;
+  background: var(--line-strong);
+  border-radius: 8px;
+  border: 2px solid var(--paper);
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }

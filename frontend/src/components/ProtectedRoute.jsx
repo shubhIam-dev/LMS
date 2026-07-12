@@ -1,29 +1,13 @@
-// ProtectedRoute - The security guard for our pages
-// This component checks if a user is logged in before showing a page.
-// If they're not logged in, it sends them to the login page!
+// ProtectedRoute — redirects to the login page if no user is logged in.
+// Reads auth state from Redux.
 
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useSelector } from "react-redux";
+import { selectIsAuthed } from "../store/authSlice";
 
 function ProtectedRoute({ children }) {
-  // Check if user is logged in
-  const { user, loading } = useAuth();
-
-  // Still checking if user is logged in (just started the app)
-  if (loading) {
-    return (
-      <div className="loading-screen">
-        <div className="loading-spinner">Loading...</div>
-      </div>
-    );
-  }
-
-  // If no user is logged in, redirect to the login page
-  if (!user) {
-    return <Navigate to="/" replace />;
-  }
-
-  // User is logged in - show the page they asked for
+  const isAuthed = useSelector(selectIsAuthed);
+  if (!isAuthed) return <Navigate to="/" replace />;
   return children;
 }
 
