@@ -56,12 +56,11 @@ export const courseApi = {
     return callApi("/course/getAllCourses");
   },
 
-  // Get a specific course by its ID
+  // Get a specific course by its ID.
+  // NOTE: a GET request cannot carry a body (fetch throws if you try), so the
+  // id goes in the query string. The backend reads it from req.query._id.
   getCourseById: (id) => {
-    return callApi(`/course/getCourseById`, {
-      method: "GET",
-      body: JSON.stringify({ _id: id }),
-    });
+    return callApi(`/course/getCourseById?_id=${encodeURIComponent(id)}`);
   },
 };
 
@@ -84,7 +83,4 @@ export const marksApi = {
   getAllMarks: () => {
     return callApi("/marks/getAllMarks");
   },
-  getMarksById : () =>{
-    
-  }
 };

@@ -1,52 +1,67 @@
 let Course=require("../models/Courses.model.js")
 let User=require("../models/User.model.js")
 
-function addCourse(req,res){
-    const{CourseName,CourseCode}=req.body
+async function addCourse(req,res){
+    try {
+        const { CourseName, CourseCode } = req.body
+        if (!CourseName || !CourseCode) {
+            return res.status(400).json({ msg: "CourseName and CourseCode are required" })
+        }
 
-    if(!CourseName || !CourseCode){
-        return res.send("ALL FEILDS ARE REQUIRED")
+        // Pass the whole body through so optional fields (description, credits,
+        // semester, instructor, enrolledStudents) are saved too — the schema
+        // ignores anything it doesn't define.
+        const newCourse = new Course(req.body)
+        await newCourse.save()
+
+        res.status(201).json({ msg: "Course created", course: newCourse })
+    } catch (err) {
+        res.status(500).json({ msg: "Error creating course", error: err.message })
     }
-
-    let newCourse= new Course({
-        CourseName,
-        CourseCode
-    })
-
-    newCourse.save()
-    res.json({
-        message: 'User registered successfully',
-        CourseName:newCourse.CourseName,
-        CourseCode:newCourse.CourseCode
-      })
-
 }
 
 function updateCourseById(req,res){
-    const{_id,CourseName,CourseCode}=req.body
-    Course.updateOne({_id},
-        {CourseName,CourseCode},
-    ).then((data)=>{res.json(data)})
+    const { _id, CourseName, CourseCode } = req.body
+    if (!_id) return res.status(400).json({ msg: "_id is required" })
+
+    Course.updateOne({ _id }, { CourseName, CourseCode })
+        .then((data) => res.json(data))
+        .catch((err) => res.status(500).json({ msg: "Error updating course", error: err.message }))
 }
 
 function deleteCourse(req,res){
-    const{_id,CourseName,CourseCode}=req.body
-    Course.deleteOne({_id}).then((data)=>{res.json(data)})
+    // id can arrive in the body (POST) or the query string (GET) — accept both.
+    // Optional chaining guards against req.body being undefined on a GET.
+    const _id = req.body?._id || req.query?._id
+    if (!_id) return res.status(400).json({ msg: "_id is required" })
+
+    Course.deleteOne({ _id })
+        .then((data) => res.json({ msg: "Course deleted", data }))
+        .catch((err) => res.status(500).json({ msg: "Error deleting course", error: err.message }))
 }
 
 function addCourses(req,res){
     Course.insertMany(req.body)
-    res.json({message:"Added all the Courses"})
+        .then((data) => res.status(201).json({ msg: "Added all the courses", count: data.length }))
+        .catch((err) => res.status(500).json({ msg: "Error adding courses", error: err.message }))
 }
 
 function getCourseById(req,res){
-  const{_id}=req.body
-    Course.findById({_id})
-    .then((data)=>{res.json(data)})
+    // GET request → read the id from the query string, not the body.
+    // Optional chaining guards against req.body being undefined on a GET.
+    const _id = req.query?._id || req.body?._id
+    if (!_id) return res.status(400).json({ msg: "_id is required" })
+
+    // findById takes the id value directly, NOT an object.
+    Course.findById(_id)
+        .then((data) => data ? res.json(data) : res.status(404).json({ msg: "Course not found" }))
+        .catch((err) => res.status(500).json({ msg: "Error fetching course", error: err.message }))
 }
 
 function getAllCourses(req,res){
-    Course.find().then((data)=>{res.json(data)})
+    Course.find()
+        .then((data) => res.json(data))
+        .catch((err) => res.status(500).json({ msg: "Error fetching courses", error: err.message }))
 }
 
 // POST /course/enrollStudent
