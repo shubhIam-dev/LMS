@@ -293,40 +293,52 @@ Contributions are welcome — this is a teaching repo, so **clarity beats clever
 4. **No new dependencies without discussing first.** Every dependency is another thing students have to learn.
 5. **Don't reformat files you didn't change.** Diffs should show intent, not whitespace churn.
 
-### How to contribute
-1. **Fork** this repo on GitHub.
-2. **Clone** your fork locally:
-   ```bash
-   git clone https://github.com/YOUR-USERNAME/LMS.git
-   cd LMS
-   ```
-3. **Create a branch** off `main`. Use a descriptive name:
-   ```bash
-   git checkout -b fix-marks-percentage-color
-   ```
-4. **Make the change.** Run both frontend and backend locally to verify.
-5. **Commit** with a message that explains the **why**, not just the **what**:
-   ```
-   Fix percentage color threshold for grades below 40
+### Student workflow — pull, branch, build, PR
 
-   The old cutoff at 35 was inconsistent with the pass/fail line
-   used elsewhere in the report.
-   ```
-6. **Push** and open a **Pull Request** against `shubhIam-dev/LMS` `main`.
-7. In the PR description, explain:
-   - What the change does
-   - Why it's needed
-   - What you tested manually (screenshots for UI changes are gold)
+You don't need to fork — as a contributor you work on a **branch** and open a
+Pull Request. Never commit directly to `main`.
 
-### Good first issues
-- Add proper HTTP status codes to every controller (`201`, `400`, `404` — see `backend/learn.md` §9)
-- Hash the password with `bcrypt` instead of storing plain text
-- Move `BASE_URL` in `services/api.js` to a Vite env var (`import.meta.env.VITE_API_URL`)
-- Add pagination to `getAllCourses`
-- Add a Register page (there's already a `userApi.register()` — wire it up)
-- Write a real JWT-based auth flow (backend issues token, frontend stores + sends it)
-- Add a `coursesSlice` and `marksSlice` so page data is cached in Redux
-- Fix `router.get("/deleteCourse", …)` — should be `DELETE`, not `GET`
+```bash
+# 1. Get the latest main
+git clone https://github.com/shubhIam-dev/LMS.git   # first time only
+cd LMS
+git checkout main
+git pull origin main
+
+# 2. Create your own branch (name it after what you're doing)
+git checkout -b yourname/register-page
+
+# 3. Set up and run the app (see "Running it locally" above)
+#    backend:  cd backend && npm install && npm run seed && npm start
+#    frontend: cd frontend && npm install && npm run dev
+
+# 4. Make your change, then commit (explain the WHY)
+git add .
+git commit -m "Add a register page wired to /user/register"
+
+# 5. Push your branch
+git push -u origin yourname/register-page
+```
+
+Then on GitHub click **"Compare & pull request"**, target `main`, and describe:
+- What the change does
+- Why it's needed
+- What you tested manually (screenshots for UI changes are gold)
+
+Keep your branch up to date with `git pull origin main` and merge/rebase if
+`main` has moved on.
+
+### Pick an issue
+
+Browse the [Issues tab](https://github.com/shubhIam-dev/LMS/issues) — tasks are
+labelled `good first issue`, `frontend`/`backend`/`docs`, and
+`difficulty:easy|medium|hard`. Comment on one to claim it before starting.
+
+> **Maintainers:** to populate the Issues tab with the starter tasks, run
+> `bash scripts/create-issues.sh` once (needs the GitHub CLI: `gh auth login`).
+
+The roadmaps in [AUTH.md](AUTH.md), [DATABASE.md](DATABASE.md) §7, and
+[flowofbackend.md](flowofbackend.md) list larger features worth building.
 
 ### Reporting a bug
 Open an issue with:
