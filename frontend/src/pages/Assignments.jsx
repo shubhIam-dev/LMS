@@ -2,9 +2,11 @@
 // This is like the assignment notice board - lists every homework/project!
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { assignmentApi } from "../services/api";
 
 function Assignments() {
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -73,7 +75,12 @@ function Assignments() {
       ) : (
         <div className="assignments-list">
           {assignments.map((assignment) => (
-            <div key={assignment._id} className="assignment-card">
+            // Click a card to open it (students can answer + submit there).
+            <div
+              key={assignment._id}
+              className="assignment-card clickable"
+              onClick={() => navigate(`/assignments/${assignment._id}`)}
+            >
               {/* Left side - colorful type indicator */}
               <div
                 className="assignment-type-indicator"

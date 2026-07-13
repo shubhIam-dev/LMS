@@ -3,7 +3,8 @@ let {
     submitAssignment,
     getSubmissionsByStudent,
     getSubmissionsByAssignment,
-    gradeSubmission
+    gradeSubmission,
+    gradeManual
 } = require("../controllers/submissionController.js");
 let { authenticate, authorize } = require("../middleware/auth");
 
@@ -16,6 +17,7 @@ router.get("/getByStudent", authenticate, getSubmissionsByStudent);
 // Reviewing everyone's submissions and grading is staff only.
 const staff = [authenticate, authorize("teacher", "superadmin")];
 router.get("/getByAssignment", staff, getSubmissionsByAssignment);
-router.post("/grade", staff, gradeSubmission);
+router.post("/grade", staff, gradeSubmission);          // auto-grade vs correctAnswer
+router.post("/gradeManual", staff, gradeManual);        // rubric: per-question marks
 
 module.exports = router;

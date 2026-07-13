@@ -91,5 +91,20 @@ async function enrollStudent(req,res){
     }
 }
 
-module.exports={addCourse,updateCourseById,deleteCourse,addCourses,getCourseById,getAllCourses,enrollStudent}
+// GET /course/getStudents?courseId=...   (staff only)
+// The roster: every student enrolled in one course, with names/emails filled in.
+function getCourseStudents(req,res){
+    const { courseId } = req.query;
+    if (!courseId) return res.status(400).json({ msg: "courseId is required" });
+
+    Course.findById(courseId)
+        .populate("enrolledStudents", "name email phoneNumber")
+        .then((course) => {
+            if (!course) return res.status(404).json({ msg: "Course not found" });
+            res.json({ courseId: course._id, CourseName: course.CourseName, students: course.enrolledStudents });
+        })
+        .catch((err) => res.status(500).json({ msg: "Error fetching roster", error: err.message }));
+}
+
+module.exports={addCourse,updateCourseById,deleteCourse,addCourses,getCourseById,getAllCourses,enrollStudent,getCourseStudents}
 

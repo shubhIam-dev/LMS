@@ -74,6 +74,9 @@ export const userApi = {
       body: JSON.stringify(userData),
     });
   },
+
+  // Staff: every student in the system (for enrolling into a course).
+  getStudents: () => callApi("/user/students"),
 };
 
 // 📚 COURSES
@@ -89,11 +92,20 @@ export const courseApi = {
       method: "POST",
       body: JSON.stringify({ courseId, studentId }),
     }),
+  // the roster: students enrolled in one course
+  getStudents: (courseId) =>
+    callApi(`/course/getStudents?courseId=${encodeURIComponent(courseId)}`),
 };
 
-// ❓ QUESTIONS (question bank)
+// ❓ QUESTIONS (shared question bank — every teacher sees every question)
 export const questionApi = {
-  getAll: () => callApi("/questions/getAllQuestions"),
+  // filters: { q, topic, difficulty, questionType } — all optional
+  getAll: (filters = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(filters).filter(([, v]) => v)
+    ).toString();
+    return callApi(`/questions/getAllQuestions${qs ? `?${qs}` : ""}`);
+  },
   // staff only
   add: (data) =>
     callApi("/questions/addQuestion", { method: "POST", body: JSON.stringify(data) }),
@@ -105,6 +117,9 @@ export const assignmentApi = {
   getByCourse: (courseId) =>
     callApi(`/assignments/getByCourse?courseId=${encodeURIComponent(courseId)}`),
 
+  getAssignmentById: (id) =>
+    callApi(`/assignments/getAssignmentById?id=${encodeURIComponent(id)}`),
+
   // staff only
   addAssignment: (data) =>
     callApi("/assignments/addAssignment", { method: "POST", body: JSON.stringify(data) }),
@@ -112,6 +127,30 @@ export const assignmentApi = {
     callApi("/assignments/addQuestionsToAssignment", {
       method: "POST",
       body: JSON.stringify({ assignmentId, questionIds }),
+    }),
+  // clone another teacher's assignment into your own course
+  reuse: (assignmentId, courseId, dueOn) =>
+    callApi("/assignments/reuse", {
+      method: "POST",
+      body: JSON.stringify({ assignmentId, courseId, dueOn }),
+    }),
+};
+
+// 📤 SUBMISSIONS & GRADING
+export const submissionApi = {
+  // student: submit answers to an assignment
+  submit: (payload) =>
+    callApi("/submissions/submit", { method: "POST", body: JSON.stringify(payload) }),
+  getByStudent: (studentId) =>
+    callApi(`/submissions/getByStudent?studentId=${encodeURIComponent(studentId)}`),
+
+  // staff: review + grade
+  getByAssignment: (assignmentId) =>
+    callApi(`/submissions/getByAssignment?assignmentId=${encodeURIComponent(assignmentId)}`),
+  gradeManual: (submissionId, perQuestion) =>
+    callApi("/submissions/gradeManual", {
+      method: "POST",
+      body: JSON.stringify({ submissionId, perQuestion }),
     }),
 };
 

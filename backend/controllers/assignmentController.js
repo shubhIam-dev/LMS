@@ -13,7 +13,7 @@ async function addAssignment(req, res) {
             return res.status(400).json({ msg: "assignmentName and courseId are required" });
         }
 
-        const assignment = new Assignment(req.body);
+        const assignment = new Assignment({ ...req.body, createdBy: req.user?.id });
         assignment.totalMarks = await sumMarks(assignment.questions);
         await assignment.save();
 
@@ -52,12 +52,48 @@ async function addQuestionsToAssignment(req, res) {
 }
 
 // GET /assignments/getAllAssignments
-// Includes the parent course name so the list is readable without a second call.
+// Includes the parent course name AND who created it, so teachers can browse
+// each other's assignments and pick ones to reuse.
 function getAllAssignments(req, res) {
     Assignment.find()
         .populate("courseId", "CourseName CourseCode")
+        .populate("createdBy", "name")
         .then((data) => res.json(data))
         .catch((err) => res.status(500).json({ msg: "Error fetching assignments", error: err.message }));
+}
+
+// POST /assignments/reuse
+// Body: { assignmentId, courseId, dueOn? }
+// Teacher B found teacher A's assignment and wants to give it to THEIR OWN
+// students: clone it into B's course. The clone references the SAME questions
+// (the bank is shared), but is a new assignment owned by B — so due dates and
+// future edits don't affect A's original.
+async function reuseAssignment(req, res) {
+    try {
+        const { assignmentId, courseId, dueOn } = req.body;
+        if (!assignmentId || !courseId) {
+            return res.status(400).json({ msg: "assignmentId and courseId are required" });
+        }
+
+        const original = await Assignment.findById(assignmentId);
+        if (!original) return res.status(404).json({ msg: "Assignment not found" });
+
+        const clone = new Assignment({
+            assignmentName:   original.assignmentName,
+            assignmentType:   original.assignmentType,
+            assignmentTopics: original.assignmentTopics,
+            questions:        original.questions,       // same shared questions
+            totalMarks:       original.totalMarks,
+            courseId,                                   // the reusing teacher's course
+            dueOn:            dueOn || original.dueOn,
+            createdBy:        req.user?.id              // the reusing teacher owns the clone
+        });
+        await clone.save();
+
+        res.status(201).json({ msg: "Assignment reused into your course", assignment: clone });
+    } catch (err) {
+        res.status(500).json({ msg: "Error reusing assignment", error: err.message });
+    }
 }
 
 // GET /assignments/getByCourse?courseId=...
@@ -104,4 +140,5 @@ module.exports = {
     getAssignmentsByCourse,
     getAssignmentById,
     deleteAssignment,
+    reuseAssignment,
 };

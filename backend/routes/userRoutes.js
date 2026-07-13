@@ -1,5 +1,5 @@
 let express = require("express");
-let { addUser, getUser, addUsers } = require("../controllers/users.controllers");
+let { addUser, getUser, addUsers, getStudents } = require("../controllers/users.controllers");
 let { register, login, me, adminCreateUser } = require("../controllers/authController");
 let { authenticate, authorize } = require("../middleware/auth");
 
@@ -16,6 +16,9 @@ router.get('/me', authenticate, me);  // current user from the token
 // Minting teachers / superadmins, and bulk inserts, are privileged actions.
 router.post('/adminCreateUser', authenticate, authorize("superadmin"), adminCreateUser);
 router.post('/addUsers', authenticate, authorize("superadmin"), addUsers);
+
+// ---- Staff (teacher/superadmin) ----
+router.get('/students', authenticate, authorize("teacher", "superadmin"), getStudents);
 
 // ---- Legacy (kept for backwards-compat with older docs/scripts) ----
 router.post('/addUser', addUser);

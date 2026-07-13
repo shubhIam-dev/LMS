@@ -1,5 +1,5 @@
 let express = require("express")
-let { addCourse, updateCourseById, deleteCourse, addCourses, getCourseById, getAllCourses, enrollStudent } = require("../controllers/courses.controllers.js")
+let { addCourse, updateCourseById, deleteCourse, addCourses, getCourseById, getAllCourses, enrollStudent, getCourseStudents } = require("../controllers/courses.controllers.js")
 let { authenticate, authorize } = require("../middleware/auth")
 
 const router = express.Router()
@@ -15,5 +15,6 @@ router.post("/addCourses", staff, addCourses)
 router.post("/updateCourseById", staff, updateCourseById)
 router.post("/deleteCourse", staff, deleteCourse)   // was GET — POST is correct for a mutation
 router.post("/enrollStudent", staff, enrollStudent)
+router.get("/getStudents", staff, getCourseStudents)
 
 module.exports = router;

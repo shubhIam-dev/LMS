@@ -41,10 +41,20 @@ function getUser(req, res) {
         .catch((err) => res.status(500).json({ msg: "Error fetching user", error: err.message }))
 }
 
+// GET /user/students   (staff only)
+// Every student in the system — used by teachers to enroll students into a
+// course. Password hashes are excluded by the projection.
+function getStudents(req, res) {
+    User.find({ role: "student" }, "name email phoneNumber enrolledCourses")
+        .sort({ name: 1 })
+        .then((data) => res.json(data))
+        .catch((err) => res.status(500).json({ msg: "Error fetching students", error: err.message }))
+}
+
 function addUsers(req, res) {
     User.insertMany(req.body)
         .then((data) => res.status(201).json({ msg: "Users registered successfully", count: data.length }))
         .catch((err) => res.status(500).json({ msg: "Error registering users", error: err.message }))
 }
 
-module.exports = { addUser, getUser, addUsers }
+module.exports = { addUser, getUser, addUsers, getStudents }

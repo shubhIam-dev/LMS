@@ -90,4 +90,58 @@ async function gradeSubmission(req, res) {
     }
 }
 
-module.exports = { submitAssignment, getSubmissionsByStudent, getSubmissionsByAssignment, gradeSubmission };
+// POST /submissions/gradeManual
+// Body: { submissionId, perQuestion: [{ questionId, marks }], }
+// Rubric-style grading: the teacher awards marks per question (e.g. for long
+// answers the auto-grader can't score). We clamp each award to [0, question.marks],
+// store it on the answer, total it up, and record a Marks row.
+async function gradeManual(req, res) {
+    try {
+        const { submissionId, perQuestion } = req.body;
+        if (!submissionId || !Array.isArray(perQuestion)) {
+            return res.status(400).json({ msg: "submissionId and perQuestion[] are required" });
+        }
+
+        const submission = await Submission.findById(submissionId);
+        if (!submission) return res.status(404).json({ msg: "Submission not found" });
+
+        const assignment = await Assignment.findById(submission.assignmentId).populate("courseId");
+        if (!assignment) return res.status(404).json({ msg: "Assignment not found" });
+
+        // Max marks per question, for clamping.
+        const questions = await Question.find({ _id: { $in: submission.answers.map(a => a.questionId) } });
+        const maxById = new Map(questions.map(q => [String(q._id), q.marks || 0]));
+        const awardById = new Map(perQuestion.map(p => [String(p.questionId), Number(p.marks) || 0]));
+
+        let total = 0;
+        for (const a of submission.answers) {
+            const key = String(a.questionId);
+            if (awardById.has(key)) {
+                const max = maxById.get(key) ?? 0;
+                a.awarded = Math.min(Math.max(awardById.get(key), 0), max);   // clamp 0..max
+            }
+            total += a.awarded || 0;
+        }
+
+        submission.marksAwarded = total;
+        submission.status = "graded";
+        await submission.save();
+
+        const marksRow = new Marks({
+            studentId:     submission.studentId,
+            courseId:      assignment.courseId?._id,
+            courseName:    assignment.courseId?.CourseName || "Unknown Course",
+            marksObtained: total,
+            totalMarks:    assignment.totalMarks || 0,
+            examType:      "Assignment",
+            semester:      assignment.courseId?.semester || "N/A"
+        });
+        await marksRow.save();
+
+        res.json({ msg: "Graded", marksAwarded: total, totalMarks: assignment.totalMarks, submission });
+    } catch (err) {
+        res.status(500).json({ msg: "Error grading submission", error: err.message });
+    }
+}
+
+module.exports = { submitAssignment, getSubmissionsByStudent, getSubmissionsByAssignment, gradeSubmission, gradeManual };

@@ -5,7 +5,8 @@ let {
     getAllAssignments,
     getAssignmentsByCourse,
     getAssignmentById,
-    deleteAssignment
+    deleteAssignment,
+    reuseAssignment
 } = require('../controllers/assignmentController.js');
 let { authenticate, authorize } = require("../middleware/auth");
 
@@ -21,5 +22,6 @@ const staff = [authenticate, authorize("teacher", "superadmin")];
 router.post('/addAssignment', staff, addAssignment);
 router.post('/addQuestionsToAssignment', staff, addQuestionsToAssignment);
 router.post('/deleteAssignment', staff, deleteAssignment);
+router.post('/reuse', staff, reuseAssignment);
 
 module.exports = router;
