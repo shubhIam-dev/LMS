@@ -1,13 +1,13 @@
-// 🧑‍🎓 StudentProfile — Your Personal Profile Page
+// StudentProfile — Your Personal Profile Page
 //
 // This is like your student ID card, but DIGITAL and BETTER!
 // You can:
-//   • 👁️ View all your info (personal, academic, guardian, address)
-//   • ✏️ Edit your profile (click "Edit Profile" and change anything)
-//   • 📸 Upload a profile picture
-//   • 🔑 Change your password
+//   • View all your info (personal, academic, guardian, address)
+//   • Edit your profile (click "Edit Profile" and change anything)
+//   • Upload a profile picture
+//   • Change your password
 //
-// 📖 How it works:
+// How it works:
 //    1. When the page loads, it calls the backend: "Hey, give me my profile!"
 //    2. The backend looks up the user by the JWT token
 //    3. All the data comes back and we display it in nice cards
@@ -18,34 +18,129 @@ import { useState, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { profileApi, BASE_URL } from "../services/api";
 import { updateUser } from "../store/authSlice";
+import SKILLS_LIST from "../data/skillsList";
+import FIELD_OF_STUDY_LIST from "../data/fieldOfStudyList";
+
+// Helper component for displaying/editing a single social link field
+function SocialLinkInput({ label, name, value, isEditing, onChange, placeholder }) {
+  if (isEditing) {
+    return (
+      <div className="info-field">
+        <label>{label}</label>
+        <input
+          type="url"
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+        />
+      </div>
+    );
+  }
+
+  if (!value) return null; // Hide empty links in view mode
+
+  return (
+    <div className="info-field">
+      <label>{label}</label>
+      <a href={value} target="_blank" rel="noopener noreferrer" className="field-value social-link">
+        {value}
+      </a>
+    </div>
+  );
+}
 
 function StudentProfile() {
-  // 📡 Redux dispatch — for sending updates back to the global store
+  // Redux dispatch — for sending updates back to the global store
   const dispatch = useDispatch();
 
-  // 📦 State to store ALL profile data
+  // State to store ALL profile data
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // ✏️ Edit mode state
-  const [isEditing, setIsEditing] = useState(false);
+  // Per-section edit mode — each card has its own toggle
+  const [editingSections, setEditingSections] = useState({});
+  function toggleSection(section) {
+    setEditingSections((prev) => ({ ...prev, [section]: !prev[section] }));
+    setShowPasswordForm(false);
+    setError("");
+  }
+  function enableSection(section) {
+    setEditingSections((prev) => ({ ...prev, [section]: true }));
+    setShowPasswordForm(false);
+    setError("");
+  }
 
-  // 🔑 Password change state
+  // Password change state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+
+  // Projects state
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [editingProjectIndex, setEditingProjectIndex] = useState(null); // null = adding NEW, number = editing EXISTING
+  const [projectForm, setProjectForm] = useState({
+    title: "",
+    description: "",
+    technologies: "",
+    gitLink: "",     // Link to GitHub/Git repository (source code)
+    hostLink: "",    // Link to live/hosted version of the project
+    startDate: "",
+    endDate: "",
+  });
+
+  // Experience state
+  const [showExperienceForm, setShowExperienceForm] = useState(false);
+  const [editingExperienceIndex, setEditingExperienceIndex] = useState(null);
+  const [experienceForm, setExperienceForm] = useState({
+    company: "",
+    position: "",
+    description: "",
+    location: "",
+    startDate: "",
+    endDate: "",
+  });
+  // Certificates state
+  const [showCertForm, setShowCertForm] = useState(false);
+  const [editingCertIndex, setEditingCertIndex] = useState(null);
+  const [certForm, setCertForm] = useState({
+    title: "",
+    organization: "",
+    startDate: "",
+    link: "",
+    description: "",
+  });
+
+  // Education state
+  const [showEduForm, setShowEduForm] = useState(false);
+  const [editingEduIndex, setEditingEduIndex] = useState(null);
+  const [eduForm, setEduForm] = useState({
+    level: "",
+    institute: "",
+    degree: "",
+    fieldOfStudy: "",
+    startDate: "",
+    endDate: "",
+    gradeType: "",
+    grade: "",
+    maxGrade: "",
+  });
+
+  // Skills search state
+  const [skillSearch, setSkillSearch] = useState("");
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  // 📸 File upload ref
+  // File upload ref
   const fileInputRef = useRef(null);
 
   // ============================================================
-  // 📥 FETCH PROFILE — Load data when the page mounts
+  // FETCH PROFILE — Load data when the page mounts
   // ============================================================
   useEffect(() => {
     fetchProfile();
@@ -64,17 +159,29 @@ function StudentProfile() {
   }
 
   // ============================================================
-  // ✏️ HANDLE INPUT CHANGE — Update form data when user types
+  // HANDLE INPUT CHANGE — Update form data when user types
   // ============================================================
   function handleChange(e) {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
   }
 
+  // Handles changes for socialLinks fields (nested object)
+  function handleSocialLinkChange(e) {
+    const { name, value } = e.target;
+    setProfile((prev) => ({
+      ...prev,
+      socialLinks: {
+        ...(prev.socialLinks || {}),
+        [name]: value,
+      },
+    }));
+  }
+
   // ============================================================
-  // 💾 SAVE PROFILE — Send updated data to the backend
+  // SAVE PROFILE — Send updated data to the backend
   // ============================================================
-  async function handleSave() {
+  async function handleSave(onSuccessCallback) {
     try {
       setSaving(true);
       setError("");
@@ -84,13 +191,16 @@ function StudentProfile() {
 
       if (result.user) {
         setProfile(result.user);
-        // 🔄 Sync the updated profile back to Redux + localStorage
+        // Sync the updated profile back to Redux + localStorage
         // This ensures the sidebar shows your new name/email right away
         dispatch(updateUser(result.user));
       }
 
-      setSuccess("✅ " + result.msg || "Profile updated successfully!");
-      setIsEditing(false);
+      setSuccess(result.msg || "Profile updated successfully!");
+
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(""), 3000);
@@ -101,17 +211,312 @@ function StudentProfile() {
     }
   }
 
+  // Called when saving a single card/section
+  function handleSectionSave(section) {
+    handleSave(() => {
+      setEditingSections((prev) => ({ ...prev, [section]: false }));
+    });
+  }
+
+  // Called when cancelling a single card/section — reloads original data
+  function handleSectionCancel(section) {
+    setEditingSections((prev) => ({ ...prev, [section]: false }));
+    fetchProfile();
+    setError("");
+  }
+
   // ============================================================
-  // ↩️ CANCEL EDIT — Revert all changes and go back to view mode
+  // PROJECT FUNCTIONS — Add, Edit, and Remove Projects
+  // ============================================================
+
+  // Open the form to add a NEW project
+  function handleAddProject() {
+    // Reset the form to empty (we're adding a new project!)
+    setProjectForm({
+      title: "",
+      description: "",
+      technologies: "",
+      gitLink: "",
+      hostLink: "",
+      startDate: "",
+      endDate: "",
+    });
+    setEditingProjectIndex(null); // null = "this is a NEW project"
+    setShowProjectForm(true); // Show the form!
+    enableSection("projects");
+  }
+
+  // Open the form to EDIT an existing project
+  function handleEditProject(index) {
+    // Fill the form with the project's current data (so user can modify it)
+    const project = profile.projects[index];
+    setProjectForm({
+      title: project.title || "",
+      description: project.description || "",
+      technologies: project.technologies || "",
+      gitLink: project.gitLink || "",
+      hostLink: project.hostLink || "",
+      startDate: project.startDate || "",
+      endDate: project.endDate || "",
+    });
+    setEditingProjectIndex(index); // Remember WHICH project we're editing
+    setShowProjectForm(true); // Show the form!
+  }
+
+  // Remove a project from the list
+  function handleRemoveProject(index) {
+    // Ask user to confirm ("Are you sure?")
+    if (!window.confirm("Remove this project? This cannot be undone.")) {
+      return; // User changed their mind — do nothing!
+    }
+
+    // Filter OUT the project at the given index (keep everything else)
+    const updatedProjects = profile.projects.filter((_, i) => i !== index);
+    // Update the profile state with the new projects list
+    setProfile((prev) => ({ ...prev, projects: updatedProjects }));
+  }
+
+  // Update the form fields when user types
+  function handleProjectFormChange(e) {
+    const { name, value } = e.target;
+    setProjectForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  // Save the project (add new OR update existing)
+  function handleSaveProject() {
+    // Basic validation — title is required!
+    if (!projectForm.title.trim()) {
+      setError("Project title is required!");
+      return;
+    }
+
+    let updatedProjects;
+
+    if (editingProjectIndex === null) {
+      // ADDING a NEW project — add it to the end of the array
+      updatedProjects = [...(profile.projects || []), { ...projectForm }];
+    } else {
+      // EDITING an EXISTING project — replace it at the right position
+      updatedProjects = [...(profile.projects || [])];
+      updatedProjects[editingProjectIndex] = { ...projectForm };
+    }
+
+    // Update the profile state with the new projects array
+    setProfile((prev) => ({ ...prev, projects: updatedProjects }));
+
+    // Close the form and reset
+    setShowProjectForm(false);
+    setEditingProjectIndex(null);
+    setError("");
+  }
+
+  // Cancel the project form (close without saving)
+  function handleCancelProjectForm() {
+    setShowProjectForm(false);
+    setEditingProjectIndex(null);
+    setError("");
+  }
+
+  // ============================================================
+  // EXPERIENCE FUNCTIONS — Add, Edit, and Remove Experience
+  // ============================================================
+
+  function handleAddExperience() {
+    setExperienceForm({ company: "", position: "", description: "", location: "", startDate: "", endDate: "" });
+    setEditingExperienceIndex(null);
+    setShowExperienceForm(true);
+    enableSection("experience");
+  }
+
+  function handleEditExperience(index) {
+    const exp = profile.experience[index];
+    setExperienceForm({
+      company: exp.company || "",
+      position: exp.position || "",
+      description: exp.description || "",
+      location: exp.location || "",
+      startDate: exp.startDate || "",
+      endDate: exp.endDate || "",
+    });
+    setEditingExperienceIndex(index);
+    setShowExperienceForm(true);
+  }
+
+  function handleRemoveExperience(index) {
+    if (!window.confirm("Remove this experience? This cannot be undone.")) return;
+    const updated = profile.experience.filter((_, i) => i !== index);
+    setProfile((prev) => ({ ...prev, experience: updated }));
+  }
+
+  function handleExperienceFormChange(e) {
+    const { name, value } = e.target;
+    setExperienceForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handleSaveExperience() {
+    if (!experienceForm.company.trim()) {
+      setError("Company name is required!");
+      return;
+    }
+    let updated;
+    if (editingExperienceIndex === null) {
+      updated = [...(profile.experience || []), { ...experienceForm }];
+    } else {
+      updated = [...(profile.experience || [])];
+      updated[editingExperienceIndex] = { ...experienceForm };
+    }
+    setProfile((prev) => ({ ...prev, experience: updated }));
+    setShowExperienceForm(false);
+    setEditingExperienceIndex(null);
+    setError("");
+  }
+
+  function handleCancelExperienceForm() {
+    setShowExperienceForm(false);
+    setEditingExperienceIndex(null);
+    setError("");
+  }
+
+  // ============================================================
+  // CERTIFICATE FUNCTIONS — Add, Edit, and Remove Certificates
+  // ============================================================
+
+  function handleAddCert() {
+    setCertForm({ title: "", organization: "", startDate: "", link: "", description: "" });
+    setEditingCertIndex(null);
+    setShowCertForm(true);
+    enableSection("certificates");
+  }
+
+  function handleEditCert(index) {
+    const cert = profile.certificates[index];
+    setCertForm({
+      title: cert.title || "",
+      organization: cert.organization || "",
+      startDate: cert.startDate || "",
+      link: cert.link || "",
+      description: cert.description || "",
+    });
+    setEditingCertIndex(index);
+    setShowCertForm(true);
+  }
+
+  function handleRemoveCert(index) {
+    if (!window.confirm("Remove this certificate? This cannot be undone.")) return;
+    const updated = profile.certificates.filter((_, i) => i !== index);
+    setProfile((prev) => ({ ...prev, certificates: updated }));
+  }
+
+  function handleCertFormChange(e) {
+    const { name, value } = e.target;
+    setCertForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handleSaveCert() {
+    if (!certForm.title.trim()) {
+      setError("Certificate title is required!");
+      return;
+    }
+    let updated;
+    if (editingCertIndex === null) {
+      updated = [...(profile.certificates || []), { ...certForm }];
+    } else {
+      updated = [...(profile.certificates || [])];
+      updated[editingCertIndex] = { ...certForm };
+    }
+    setProfile((prev) => ({ ...prev, certificates: updated }));
+    setShowCertForm(false);
+    setEditingCertIndex(null);
+    setError("");
+  }
+
+  function handleCancelCertForm() {
+    setShowCertForm(false);
+    setEditingCertIndex(null);
+    setError("");
+  }
+
+  // ============================================================
+  // EDUCATION FUNCTIONS — Add, Edit, and Remove Education
+  // ============================================================
+
+  function handleAddEdu() {
+    setEduForm({
+      level: "", institute: "", degree: "", fieldOfStudy: "",
+      startDate: "", endDate: "", gradeType: "", grade: "", maxGrade: "",
+    });
+    setEditingEduIndex(null);
+    setShowEduForm(true);
+    enableSection("education");
+  }
+
+  function handleEditEdu(index) {
+    const edu = profile.education[index];
+    setEduForm({
+      level: edu.level || "",
+      institute: edu.institute || "",
+      degree: edu.degree || "",
+      fieldOfStudy: edu.fieldOfStudy || "",
+      startDate: edu.startDate || "",
+      endDate: edu.endDate || "",
+      gradeType: edu.gradeType || "",
+      grade: edu.grade || "",
+      maxGrade: edu.maxGrade || "",
+    });
+    setEditingEduIndex(index);
+    setShowEduForm(true);
+  }
+
+  function handleRemoveEdu(index) {
+    if (!window.confirm("Remove this education entry? This cannot be undone.")) return;
+    const updated = profile.education.filter((_, i) => i !== index);
+    setProfile((prev) => ({ ...prev, education: updated }));
+  }
+
+  function handleEduFormChange(e) {
+    const { name, value } = e.target;
+    setEduForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handleSaveEdu() {
+    if (!eduForm.level.trim()) {
+      setError("Please select an education level!");
+      return;
+    }
+    if (!eduForm.institute.trim()) {
+      setError("Institute name is required!");
+      return;
+    }
+    let updated;
+    if (editingEduIndex === null) {
+      updated = [...(profile.education || []), { ...eduForm }];
+    } else {
+      updated = [...(profile.education || [])];
+      updated[editingEduIndex] = { ...eduForm };
+    }
+    setProfile((prev) => ({ ...prev, education: updated }));
+    setShowEduForm(false);
+    setEditingEduIndex(null);
+    setError("");
+  }
+
+  function handleCancelEduForm() {
+    setShowEduForm(false);
+    setEditingEduIndex(null);
+    setError("");
+  }
+
+  // ============================================================
+  // CANCEL EDIT — Revert all changes and go back to view mode
   // ============================================================
   function handleCancel() {
-    setIsEditing(false);
+    setEditingSections({});
     fetchProfile(); // Reload original data
     setError("");
   }
 
   // ============================================================
-  // 📸 UPLOAD IMAGE — Let user pick and upload a profile picture
+  // UPLOAD IMAGE — Let user pick and upload a profile picture
   // ============================================================
   async function handleImageUpload(e) {
     const file = e.target.files[0];
@@ -132,7 +537,7 @@ function StudentProfile() {
       setSuccess("");
       const result = await profileApi.uploadImage(file);
       setProfile((prev) => ({ ...prev, profileImage: result.imageUrl }));
-      setSuccess("✅ Profile picture updated!");
+      setSuccess("Profile picture updated!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError("Failed to upload image: " + err.message);
@@ -140,7 +545,7 @@ function StudentProfile() {
   }
 
   // ============================================================
-  // 🔑 CHANGE PASSWORD
+  // CHANGE PASSWORD
   // ============================================================
   async function handlePasswordChange() {
     const { currentPassword, newPassword, confirmPassword } = passwordData;
@@ -163,7 +568,7 @@ function StudentProfile() {
       setError("");
       setSuccess("");
       await profileApi.changePassword(currentPassword, newPassword);
-      setSuccess("✅ Password changed successfully!");
+      setSuccess("Password changed successfully!");
       setShowPasswordForm(false);
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setTimeout(() => setSuccess(""), 3000);
@@ -173,7 +578,7 @@ function StudentProfile() {
   }
 
   // ============================================================
-  // ⏳ LOADING STATE
+  // LOADING STATE
   // ============================================================
   if (loading) {
     return (
@@ -187,7 +592,7 @@ function StudentProfile() {
   }
 
   // ============================================================
-  // ❌ ERROR STATE — If user not found or server error
+  // ERROR STATE — If user not found or server error
   // ============================================================
   if (!profile) {
     return (
@@ -205,7 +610,7 @@ function StudentProfile() {
   }
 
   // ============================================================
-  // 🎨 FULL PROFILE PAGE
+  // FULL PROFILE PAGE
   // ============================================================
   return (
     <div className="page-content profile-page">
@@ -217,16 +622,16 @@ function StudentProfile() {
         <p>View and manage your personal and academic information.</p>
       </div>
 
-      {/* 🔔 Success / Error Messages */}
+      {/* Success / Error Messages */}
       {success && <div className="success-message">{success}</div>}
       {error && <div className="error-message">{error}</div>}
 
       {/* ================================================== */}
-      {/* 📇 LEFT SIDE — Profile Card (Photo + Quick Info)   */}
+      {/* LEFT SIDE — Profile Card (Photo + Quick Info)   */}
       {/* ================================================== */}
       <div className="profile-layout">
         <div className="profile-side-card">
-          {/* 🖼️ Profile Photo */}
+          {/* Profile Photo */}
           <div className="profile-photo-section">
             <div className="profile-photo-wrapper">
               {profile.profileImage ? (
@@ -240,13 +645,13 @@ function StudentProfile() {
                   {profile.name?.[0]?.toUpperCase() || "?"}
                 </div>
               )}
-              {/* Camera icon overlay for upload */}
+              {/* Upload button overlay */}
               <button
                 className="photo-upload-btn"
                 onClick={() => fileInputRef.current?.click()}
                 title="Upload photo"
               >
-                📸
+                Upload
               </button>
               <input
                 ref={fileInputRef}
@@ -258,11 +663,11 @@ function StudentProfile() {
             </div>
             <h2 className="profile-name">{profile.name || "N/A"}</h2>
             <p className="profile-role-badge">
-              {profile.role === "student" ? "🎓 Student" : "👨‍🏫 Faculty"}
+              {profile.role === "student" ? "Student" : "Faculty"}
             </p>
           </div>
 
-          {/* 🆔 Quick Info */}
+          {/* Quick Info */}
           <div className="profile-quick-info">
             <div className="quick-info-item">
               <span className="quick-info-label">Student ID</span>
@@ -296,44 +701,52 @@ function StudentProfile() {
             </div>
           </div>
 
-          {/* 🎯 Action Buttons */}
+          {/* Action Buttons */}
           <div className="profile-actions">
             <button
               className="btn btn-primary"
               onClick={() => {
-                setIsEditing(!isEditing);
+                const allClosed = Object.keys(editingSections).length === 0;
+                if (allClosed) {
+                  const sections = ["personalInfo","bio","socialLinks","skills","education","academicInfo","address","guardian","experience","coCurricular","achievements","certificates","projects"];
+                  const allOpen = {};
+                  sections.forEach(s => allOpen[s] = true);
+                  setEditingSections(allOpen);
+                } else {
+                  setEditingSections({});
+                }
                 setShowPasswordForm(false);
               }}
             >
-              {isEditing ? "✕ Cancel" : "✏️ Edit Profile"}
+              {Object.keys(editingSections).length > 0 ? "Cancel All" : "Edit All"}
             </button>
             <button
               className="btn btn-secondary"
               onClick={() => fileInputRef.current?.click()}
             >
-              📸 Upload Photo
+              Upload Photo
             </button>
             <button
               className="btn btn-outline"
               onClick={() => {
                 setShowPasswordForm(!showPasswordForm);
-                setIsEditing(false);
+                setEditingSections({});
               }}
             >
-              🔑 {showPasswordForm ? "✕ Close" : "Change Password"}
+              {showPasswordForm ? "Close" : "Change Password"}
             </button>
           </div>
         </div>
 
         {/* ================================================== */}
-        {/* 📋 RIGHT SIDE — Detailed Information Cards          */}
+        {/* RIGHT SIDE — Detailed Information Cards          */}
         {/* ================================================== */}
         <div className="profile-main-cards">
-          {/* 🔑 Password Change Form (shown when toggled) */}
+          {/* Password Change Form (shown when toggled) */}
           {showPasswordForm && (
             <div className="profile-card password-card">
               <div className="card-header">
-                <h3>🔑 Change Password</h3>
+                <h3>Change Password</h3>
               </div>
               <div className="card-body">
                 <div className="form-group">
@@ -370,23 +783,27 @@ function StudentProfile() {
                   />
                 </div>
                 <button className="btn btn-primary" onClick={handlePasswordChange}>
-                  🔒 Update Password
+                  Update Password
                 </button>
               </div>
             </div>
           )}
 
-          {/* 👤 Personal Information */}
+          {/* Personal Information */}
           <div className="profile-card">
             <div className="card-header">
-              <h3>👤 Personal Information</h3>
-              {isEditing && <span className="editing-badge">Editing</span>}
+              <h3>Personal Information</h3>
+              {editingSections.personalInfo ? (
+                <span className="editing-badge">Editing</span>
+              ) : (
+                <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("personalInfo"); setShowPasswordForm(false); }}>Edit</button>
+              )}
             </div>
             <div className="card-body">
               <div className="info-grid">
                 <div className="info-field">
                   <label>Full Name</label>
-                  {isEditing ? (
+                  {editingSections.personalInfo ? (
                     <input
                       type="text"
                       name="name"
@@ -400,7 +817,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Email</label>
-                  {isEditing ? (
+                  {editingSections.personalInfo ? (
                     <input
                       type="email"
                       name="email"
@@ -414,7 +831,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Phone Number</label>
-                  {isEditing ? (
+                  {editingSections.personalInfo ? (
                     <input
                       type="text"
                       name="phone"
@@ -428,7 +845,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Date of Birth</label>
-                  {isEditing ? (
+                  {editingSections.personalInfo ? (
                     <input
                       type="date"
                       name="dateOfBirth"
@@ -449,7 +866,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Gender</label>
-                  {isEditing ? (
+                  {editingSections.personalInfo ? (
                     <select
                       name="gender"
                       value={profile.gender || ""}
@@ -465,14 +882,456 @@ function StudentProfile() {
                   )}
                 </div>
               </div>
+              {editingSections.personalInfo && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("personalInfo")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("personalInfo")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 📚 Academic Information */}
+          {/* Bio / About Me */}
           <div className="profile-card">
             <div className="card-header">
-              <h3>📚 Academic Information</h3>
-              {isEditing && <span className="editing-badge">Editing</span>}
+              <h3>Bio</h3>
+              {editingSections.bio ? (
+                <span className="editing-badge">Editing</span>
+              ) : (
+                <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("bio"); setShowPasswordForm(false); }}>Edit</button>
+              )}
+            </div>
+            <div className="card-body">
+              <div className="info-field full-width">
+                <label>About Me</label>
+                {editingSections.bio ? (
+                  <textarea
+                    name="bio"
+                    value={profile.bio || ""}
+                    onChange={handleChange}
+                    placeholder="Write a short bio about yourself — your interests, goals, or anything you'd like to share..."
+                    rows={4}
+                  />
+                ) : (
+                  <p className="field-value">
+                    {profile.bio || "No bio added yet."}
+                  </p>
+                )}
+              </div>
+              {editingSections.bio && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("bio")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("bio")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Social Links — Coding profiles & portfolio */}
+          <div className="profile-card">
+            <div className="card-header">
+              <h3>Social Links</h3>
+              {editingSections.socialLinks ? (
+                <span className="editing-badge">Editing</span>
+              ) : (
+                <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("socialLinks"); setShowPasswordForm(false); }}>Edit</button>
+              )}
+            </div>
+            <div className="card-body">
+              <div className="info-grid social-links-grid">
+                <SocialLinkInput
+                  label="LinkedIn"
+                  name="linkedin"
+                  value={profile.socialLinks?.linkedin || ""}
+                  isEditing={editingSections.socialLinks}
+                  onChange={handleSocialLinkChange}
+                  placeholder="https://linkedin.com/in/your-profile"
+                />
+                <SocialLinkInput
+                  label="GitHub"
+                  name="github"
+                  value={profile.socialLinks?.github || ""}
+                  isEditing={editingSections.socialLinks}
+                  onChange={handleSocialLinkChange}
+                  placeholder="https://github.com/your-username"
+                />
+                <SocialLinkInput
+                  label="HackerEarth"
+                  name="hackerearth"
+                  value={profile.socialLinks?.hackerearth || ""}
+                  isEditing={editingSections.socialLinks}
+                  onChange={handleSocialLinkChange}
+                  placeholder="https://hackerearth.com/@your-profile"
+                />
+                <SocialLinkInput
+                  label="HackerRank"
+                  name="hackerrank"
+                  value={profile.socialLinks?.hackerrank || ""}
+                  isEditing={editingSections.socialLinks}
+                  onChange={handleSocialLinkChange}
+                  placeholder="https://hackerrank.com/your-profile"
+                />
+                <SocialLinkInput
+                  label="CodeChef"
+                  name="codechef"
+                  value={profile.socialLinks?.codechef || ""}
+                  isEditing={editingSections.socialLinks}
+                  onChange={handleSocialLinkChange}
+                  placeholder="https://codechef.com/users/your-username"
+                />
+                <SocialLinkInput
+                  label="LeetCode"
+                  name="leetcode"
+                  value={profile.socialLinks?.leetcode || ""}
+                  isEditing={editingSections.socialLinks}
+                  onChange={handleSocialLinkChange}
+                  placeholder="https://leetcode.com/your-username"
+                />
+                <SocialLinkInput
+                  label="CodeForces"
+                  name="codeforces"
+                  value={profile.socialLinks?.codeforces || ""}
+                  isEditing={editingSections.socialLinks}
+                  onChange={handleSocialLinkChange}
+                  placeholder="https://codeforces.com/profile/your-username"
+                />
+                <SocialLinkInput
+                  label="Kaggle"
+                  name="kaggle"
+                  value={profile.socialLinks?.kaggle || ""}
+                  isEditing={editingSections.socialLinks}
+                  onChange={handleSocialLinkChange}
+                  placeholder="https://kaggle.com/your-username"
+                />
+                <SocialLinkInput
+                  label="Portfolio"
+                  name="portfolio"
+                  value={profile.socialLinks?.portfolio || ""}
+                  isEditing={editingSections.socialLinks}
+                  onChange={handleSocialLinkChange}
+                  placeholder="https://your-portfolio.com"
+                />
+              </div>
+              {editingSections.socialLinks && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("socialLinks")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("socialLinks")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Skills — Searchable predefined skills list */}
+          <div className="profile-card skills-card">
+            <div className="card-header">
+              <h3>Skills</h3>
+              {editingSections.skills ? (
+                <span className="editing-badge">Editing</span>
+              ) : (
+                <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("skills"); setShowPasswordForm(false); }}>Edit</button>
+              )}
+            </div>
+            <div className="card-body">
+              {/* Edit mode: search + checkboxes for ALL skills */}
+              {editingSections.skills && (
+                <div className="skills-editor">
+                  <input
+                    type="text"
+                    className="skill-search-input"
+                    placeholder="Search skills..."
+                    value={skillSearch}
+                    onChange={(e) => setSkillSearch(e.target.value)}
+                  />
+                  <div className="skills-checkbox-grid">
+                    {SKILLS_LIST.filter((s) =>
+                      s.toLowerCase().includes(skillSearch.toLowerCase())
+                    ).map((skill) => {
+                      const isSelected = profile.skills?.includes(skill);
+                      return (
+                        <label
+                          key={skill}
+                          className={`skill-checkbox-item ${isSelected ? "selected" : ""}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              if (isSelected) {
+                                setProfile((prev) => ({
+                                  ...prev,
+                                  skills: (prev.skills || []).filter((s) => s !== skill),
+                                }));
+                              } else {
+                                setProfile((prev) => ({
+                                  ...prev,
+                                  skills: [...(prev.skills || []), skill],
+                                }));
+                              }
+                            }}
+                          />
+                          <span className="skill-checkbox-label">{skill}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Selected skills count and tags in view mode */}
+              {!editingSections.skills && profile.skills && profile.skills.length > 0 && (
+                <div className="skills-tags">
+                  {profile.skills.map((skill) => (
+                    <span key={skill} className="skill-tag">{skill}</span>
+                  ))}
+                </div>
+              )}
+              {!editingSections.skills && (!profile.skills || profile.skills.length === 0) && (
+                <div className="empty-skills">
+                  <p>No skills added yet.</p>
+                </div>
+              )}
+              {editingSections.skills && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("skills")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("skills")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Education — Academic qualifications */}
+          <div className="profile-card edu-card">
+            <div className="card-header">
+              <h3>Education</h3>
+              <div className="card-header-actions">
+                <button className="btn btn-sm btn-outline" onClick={handleAddEdu}>
+                  Add Education
+                </button>
+                {!editingSections.education && (
+                  <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("education"); setShowPasswordForm(false); }}>
+                    Edit
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="card-body">
+              {/* Education Form */}
+              {showEduForm && (
+                <div className="edu-form">
+                  <h4 className="edu-form-title">
+                    {editingEduIndex === null ? "New Education" : "Edit Education"}
+                  </h4>
+                  <div className="info-grid">
+                    <div className="info-field full-width">
+                      <label>Level of Education *</label>
+                      <select
+                        name="level"
+                        value={eduForm.level}
+                        onChange={handleEduFormChange}
+                      >
+                        <option value="">Select level of education</option>
+                        <option value="10th or Equivalent">10th or Equivalent</option>
+                        <option value="12th or Equivalent">12th or Equivalent</option>
+                        <option value="Graduation">Graduation</option>
+                        <option value="Post Graduation">Post Graduation</option>
+                      </select>
+                    </div>
+                    <div className="info-field full-width">
+                      <label>Institute *</label>
+                      <input
+                        type="text"
+                        name="institute"
+                        value={eduForm.institute}
+                        onChange={handleEduFormChange}
+                        placeholder="Enter your institute name"
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Degree</label>
+                      <input
+                        type="text"
+                        name="degree"
+                        value={eduForm.degree}
+                        onChange={handleEduFormChange}
+                        placeholder="e.g. B.Tech, B.Sc, M.Tech"
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Field of Study</label>
+                      <select
+                        name="fieldOfStudy"
+                        value={eduForm.fieldOfStudy}
+                        onChange={handleEduFormChange}
+                      >
+                        <option value="">Select field of study</option>
+                        {FIELD_OF_STUDY_LIST.map((f) => (
+                          <option key={f} value={f}>{f}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="info-field">
+                      <label>Start Date</label>
+                      <input
+                        type="date"
+                        name="startDate"
+                        value={eduForm.startDate}
+                        onChange={handleEduFormChange}
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>End Date</label>
+                      <input
+                        type="date"
+                        name="endDate"
+                        value={eduForm.endDate}
+                        onChange={handleEduFormChange}
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Grade Type</label>
+                      <select
+                        name="gradeType"
+                        value={eduForm.gradeType}
+                        onChange={handleEduFormChange}
+                      >
+                        <option value="">Select grade type</option>
+                        <option value="CGPA">CGPA</option>
+                        <option value="Percentage">Percentage</option>
+                        <option value="Custom">Custom</option>
+                      </select>
+                    </div>
+                    <div className="info-field">
+                      <label>Grade</label>
+                      <input
+                        type="text"
+                        name="grade"
+                        value={eduForm.grade}
+                        onChange={handleEduFormChange}
+                        placeholder="Percentage or CGPA"
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Max Grade</label>
+                      <input
+                        type="text"
+                        name="maxGrade"
+                        value={eduForm.maxGrade}
+                        onChange={handleEduFormChange}
+                        placeholder="e.g. 10.0, 100%"
+                      />
+                    </div>
+                  </div>
+                  <div className="edu-form-actions">
+                    <button className="btn btn-primary btn-sm" onClick={handleSaveEdu}>
+                      Save Education
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={handleCancelEduForm}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* List of Education */}
+              {(!profile.education || profile.education.length === 0) && !showEduForm ? (
+                <div className="empty-edu">
+                  <p>
+                    {editingSections.education
+                      ? "No education entries yet. Click 'Add Education' to add your qualifications!"
+                      : "No education added yet."}
+                  </p>
+                </div>
+              ) : (
+                <div className="edu-list">
+                  {profile.education.map((edu, index) => (
+                    <div className="edu-item" key={index}>
+                      <div className="edu-item-header">
+                        <div className="edu-item-title-group">
+                          <h4 className="edu-level">{edu.level || "Untitled"}</h4>
+                          {edu.institute && <span className="edu-institute">{edu.institute}</span>}
+                        </div>
+                        {editingSections.education && (
+                          <div className="edu-item-actions">
+                            <button className="btn btn-sm btn-outline" onClick={() => handleEditEdu(index)}>
+                              Edit
+                            </button>
+                            <button className="btn btn-sm btn-danger-outline" onClick={() => handleRemoveEdu(index)}>
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="edu-details">
+                        {edu.degree && <span className="edu-degree">{edu.degree}</span>}
+                        {edu.degree && edu.fieldOfStudy && <span className="edu-dot">·</span>}
+                        {edu.fieldOfStudy && <span className="edu-field">{edu.fieldOfStudy}</span>}
+                      </div>
+                      <div className="edu-meta">
+                        {(edu.startDate || edu.endDate) && (
+                          <span className="edu-date">
+                            {edu.startDate
+                              ? new Date(edu.startDate).toLocaleDateString("en-US", {
+                                  year: "numeric", month: "short",
+                                })
+                              : ""}
+                            {edu.startDate && edu.endDate ? " — " : ""}
+                            {edu.endDate
+                              ? new Date(edu.endDate).toLocaleDateString("en-US", {
+                                  year: "numeric", month: "short",
+                                })
+                              : edu.startDate ? " -- Present" : ""}
+                          </span>
+                        )}
+                        {(edu.grade || edu.maxGrade) && (
+                          <span className="edu-grade">
+                            {edu.gradeType ? `${edu.gradeType}: ` : ""}
+                            {edu.grade || ""}
+                            {edu.maxGrade ? ` / ${edu.maxGrade}` : ""}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {editingSections.education && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("education")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("education")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Academic Information */}
+          <div className="profile-card">
+            <div className="card-header">
+              <h3>Academic Information</h3>
+              {editingSections.academicInfo ? (
+                <span className="editing-badge">Editing</span>
+              ) : (
+                <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("academicInfo"); setShowPasswordForm(false); }}>Edit</button>
+              )}
             </div>
             <div className="card-body">
               <div className="info-grid">
@@ -482,7 +1341,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Department</label>
-                  {isEditing ? (
+                  {editingSections.academicInfo ? (
                     <input
                       type="text"
                       name="department"
@@ -496,7 +1355,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Course</label>
-                  {isEditing ? (
+                  {editingSections.academicInfo ? (
                     <input
                       type="text"
                       name="course"
@@ -510,7 +1369,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Branch</label>
-                  {isEditing ? (
+                  {editingSections.academicInfo ? (
                     <input
                       type="text"
                       name="branch"
@@ -524,7 +1383,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Year</label>
-                  {isEditing ? (
+                  {editingSections.academicInfo ? (
                     <select
                       name="year"
                       value={profile.year || ""}
@@ -542,7 +1401,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Semester</label>
-                  {isEditing ? (
+                  {editingSections.academicInfo ? (
                     <select
                       name="semester"
                       value={profile.semester || ""}
@@ -564,7 +1423,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Section</label>
-                  {isEditing ? (
+                  {editingSections.academicInfo ? (
                     <input
                       type="text"
                       name="section"
@@ -578,7 +1437,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Batch</label>
-                  {isEditing ? (
+                  {editingSections.academicInfo ? (
                     <input
                       type="text"
                       name="batch"
@@ -591,20 +1450,34 @@ function StudentProfile() {
                   )}
                 </div>
               </div>
+              {editingSections.academicInfo && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("academicInfo")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("academicInfo")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 🏠 Address Information */}
+          {/* Address Information */}
           <div className="profile-card">
             <div className="card-header">
-              <h3>🏠 Address</h3>
-              {isEditing && <span className="editing-badge">Editing</span>}
+              <h3>Address</h3>
+              {editingSections.address ? (
+                <span className="editing-badge">Editing</span>
+              ) : (
+                <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("address"); setShowPasswordForm(false); }}>Edit</button>
+              )}
             </div>
             <div className="card-body">
               <div className="info-grid two-col">
                 <div className="info-field">
                   <label>Current Address</label>
-                  {isEditing ? (
+                  {editingSections.address ? (
                     <textarea
                       name="currentAddress"
                       value={profile.currentAddress || ""}
@@ -620,7 +1493,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Permanent Address</label>
-                  {isEditing ? (
+                  {editingSections.address ? (
                     <textarea
                       name="permanentAddress"
                       value={profile.permanentAddress || ""}
@@ -635,20 +1508,34 @@ function StudentProfile() {
                   )}
                 </div>
               </div>
+              {editingSections.address && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("address")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("address")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 👨‍👩‍👧 Guardian Information */}
+          {/* Guardian Information */}
           <div className="profile-card">
             <div className="card-header">
-              <h3>👨‍👩‍👧 Guardian Information</h3>
-              {isEditing && <span className="editing-badge">Editing</span>}
+              <h3>Guardian Information</h3>
+              {editingSections.guardian ? (
+                <span className="editing-badge">Editing</span>
+              ) : (
+                <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("guardian"); setShowPasswordForm(false); }}>Edit</button>
+              )}
             </div>
             <div className="card-body">
               <div className="info-grid">
                 <div className="info-field">
                   <label>Father's Name</label>
-                  {isEditing ? (
+                  {editingSections.guardian ? (
                     <input
                       type="text"
                       name="fatherName"
@@ -662,7 +1549,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Mother's Name</label>
-                  {isEditing ? (
+                  {editingSections.guardian ? (
                     <input
                       type="text"
                       name="motherName"
@@ -676,7 +1563,7 @@ function StudentProfile() {
                 </div>
                 <div className="info-field">
                   <label>Guardian Phone</label>
-                  {isEditing ? (
+                  {editingSections.guardian ? (
                     <input
                       type="text"
                       name="guardianPhone"
@@ -691,13 +1578,623 @@ function StudentProfile() {
                   )}
                 </div>
               </div>
+              {editingSections.guardian && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("guardian")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("guardian")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 🗓️ Account Information (Read-only) */}
+          {/* ================================================== */}
+          {/* EXPERIENCE — Work experience entries              */}
+          {/* ================================================== */}
+          <div className="profile-card experience-card">
+            <div className="card-header">
+              <h3>Experience</h3>
+              <div className="card-header-actions">
+                <button className="btn btn-sm btn-outline" onClick={handleAddExperience}>
+                  Add Experience
+                </button>
+                {!editingSections.experience && (
+                  <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("experience"); setShowPasswordForm(false); }}>
+                    Edit
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="card-body">
+              {/* Experience Form */}
+              {showExperienceForm && (
+                <div className="experience-form">
+                  <h4 className="experience-form-title">
+                    {editingExperienceIndex === null ? "New Experience" : "Edit Experience"}
+                  </h4>
+                  <div className="info-grid">
+                    <div className="info-field full-width">
+                      <label>Company *</label>
+                      <input
+                        type="text"
+                        name="company"
+                        value={experienceForm.company}
+                        onChange={handleExperienceFormChange}
+                        placeholder="e.g. Google, Microsoft"
+                      />
+                    </div>
+                    <div className="info-field full-width">
+                      <label>Position / Role</label>
+                      <input
+                        type="text"
+                        name="position"
+                        value={experienceForm.position}
+                        onChange={handleExperienceFormChange}
+                        placeholder="e.g. Software Engineer Intern"
+                      />
+                    </div>
+                    <div className="info-field full-width">
+                      <label>Description</label>
+                      <textarea
+                        name="description"
+                        value={experienceForm.description}
+                        onChange={handleExperienceFormChange}
+                        placeholder="What did you do? Key responsibilities and achievements..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Location</label>
+                      <input
+                        type="text"
+                        name="location"
+                        value={experienceForm.location}
+                        onChange={handleExperienceFormChange}
+                        placeholder="e.g. Bangalore, India"
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Start Date</label>
+                      <input
+                        type="date"
+                        name="startDate"
+                        value={experienceForm.startDate}
+                        onChange={handleExperienceFormChange}
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>End Date</label>
+                      <input
+                        type="date"
+                        name="endDate"
+                        value={experienceForm.endDate}
+                        onChange={handleExperienceFormChange}
+                      />
+                    </div>
+                  </div>
+                  <div className="experience-form-actions">
+                    <button className="btn btn-primary btn-sm" onClick={handleSaveExperience}>
+                      Save Experience
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={handleCancelExperienceForm}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* List of Experience */}
+              {(!profile.experience || profile.experience.length === 0) && !showExperienceForm ? (
+                <div className="empty-experience">
+                  <p>
+                    {editingSections.experience
+                      ? "No experience added yet. Click 'Add Experience' to share your work history!"
+                      : "No experience added yet."}
+                  </p>
+                </div>
+              ) : (
+                <div className="experience-list">
+                  {profile.experience.map((exp, index) => (
+                    <div className="experience-item" key={index}>
+                      <div className="experience-item-header">
+                        <div className="experience-item-title-group">
+                          <h4 className="experience-company">{exp.company || "Untitled"}</h4>
+                          {exp.position && <span className="experience-position">{exp.position}</span>}
+                        </div>
+                        {editingSections.experience && (
+                          <div className="experience-item-actions">
+                            <button
+                              className="btn btn-sm btn-outline"
+                              onClick={() => handleEditExperience(index)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-sm btn-danger-outline"
+                              onClick={() => handleRemoveExperience(index)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {exp.description && (
+                        <p className="experience-description">{exp.description}</p>
+                      )}
+                      <div className="experience-meta">
+                        {exp.location && <span className="experience-location">{exp.location}</span>}
+                        {exp.startDate && (
+                          <span className="experience-date">
+                            {new Date(exp.startDate).toLocaleDateString("en-US", {
+                              year: "numeric", month: "short",
+                            })}
+                            {exp.endDate
+                              ? ` — ${new Date(exp.endDate).toLocaleDateString("en-US", {
+                                  year: "numeric", month: "short",
+                                })}`
+                              : " -- Present"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Co-curricular & POR — Free-text like Bio */}
           <div className="profile-card">
             <div className="card-header">
-              <h3>🗓️ Account Information</h3>
+              <h3>Co-curricular &amp; POR</h3>
+              {editingSections.coCurricular ? (
+                <span className="editing-badge">Editing</span>
+              ) : (
+                <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("coCurricular"); setShowPasswordForm(false); }}>Edit</button>
+              )}
+            </div>
+            <div className="card-body">
+              <div className="info-field full-width">
+                <label>Activities &amp; Positions of Responsibility</label>
+                {editingSections.coCurricular ? (
+                  <textarea
+                    name="coCurricularAndPor"
+                    value={profile.coCurricularAndPor || ""}
+                    onChange={handleChange}
+                    placeholder="Describe your co-curricular activities, positions of responsibility, clubs, committees, and any leadership roles you've held..."
+                    rows={4}
+                  />
+                ) : (
+                  <p className="field-value">
+                    {profile.coCurricularAndPor || "No co-curricular activities or positions added yet."}
+                  </p>
+                )}
+              </div>
+              {editingSections.coCurricular && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("coCurricular")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("coCurricular")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Achievements */}
+          <div className="profile-card">
+            <div className="card-header">
+              <h3>Achievements</h3>
+              {editingSections.achievements ? (
+                <span className="editing-badge">Editing</span>
+              ) : (
+                <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("achievements"); setShowPasswordForm(false); }}>Edit</button>
+              )}
+            </div>
+            <div className="card-body">
+              <div className="info-field full-width">
+                <label>Awards &amp; Achievements</label>
+                {editingSections.achievements ? (
+                  <textarea
+                    name="achievements"
+                    value={profile.achievements || ""}
+                    onChange={handleChange}
+                    placeholder="List your achievements — awards, honors, scholarships, competition wins, recognitions..."
+                    rows={4}
+                  />
+                ) : (
+                  <p className="field-value">
+                    {profile.achievements || "No achievements added yet."}
+                  </p>
+                )}
+              </div>
+              {editingSections.achievements && (
+                <div className="section-edit-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => handleSectionSave("achievements")} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => handleSectionCancel("achievements")} disabled={saving}>
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Certificates */}
+          <div className="profile-card cert-card">
+            <div className="card-header">
+              <h3>Certificates</h3>
+              <div className="card-header-actions">
+                <button className="btn btn-sm btn-outline" onClick={handleAddCert}>
+                  Add Certificate
+                </button>
+                {!editingSections.certificates && (
+                  <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("certificates"); setShowPasswordForm(false); }}>
+                    Edit
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="card-body">
+              {/* Certificate Form */}
+              {showCertForm && (
+                <div className="cert-form">
+                  <h4 className="cert-form-title">
+                    {editingCertIndex === null ? "New Certificate" : "Edit Certificate"}
+                  </h4>
+                  <div className="info-grid">
+                    <div className="info-field full-width">
+                      <label>Certificate Title *</label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={certForm.title}
+                        onChange={handleCertFormChange}
+                        placeholder="Enter certificate title"
+                      />
+                    </div>
+                    <div className="info-field full-width">
+                      <label>Provider Organisation Name</label>
+                      <input
+                        type="text"
+                        name="organization"
+                        value={certForm.organization}
+                        onChange={handleCertFormChange}
+                        placeholder="Enter Organisation Name"
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Start Date</label>
+                      <input
+                        type="date"
+                        name="startDate"
+                        value={certForm.startDate}
+                        onChange={handleCertFormChange}
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Certification Link</label>
+                      <input
+                        type="url"
+                        name="link"
+                        value={certForm.link}
+                        onChange={handleCertFormChange}
+                        placeholder="Enter Certification Link"
+                      />
+                    </div>
+                    <div className="info-field full-width">
+                      <label>Description</label>
+                      <textarea
+                        name="description"
+                        value={certForm.description}
+                        onChange={handleCertFormChange}
+                        placeholder="Briefly describe what the certificate covers..."
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  <div className="cert-form-actions">
+                    <button className="btn btn-primary btn-sm" onClick={handleSaveCert}>
+                      Save Certificate
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={handleCancelCertForm}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* List of Certificates */}
+              {(!profile.certificates || profile.certificates.length === 0) && !showCertForm ? (
+                <div className="empty-cert">
+                  <p>
+                    {editingSections.certificates
+                      ? "No certificates yet. Click 'Add Certificate' to showcase your credentials!"
+                      : "No certificates added yet."}
+                  </p>
+                </div>
+              ) : (
+                <div className="cert-list">
+                  {profile.certificates.map((cert, index) => (
+                    <div className="cert-item" key={index}>
+                      <div className="cert-item-header">
+                        <div className="cert-item-title-group">
+                          <h4 className="cert-title">{cert.title || "Untitled"}</h4>
+                          {cert.organization && <span className="cert-organization">{cert.organization}</span>}
+                        </div>
+                        {editingSections.certificates && (
+                          <div className="cert-item-actions">
+                            <button className="btn btn-sm btn-outline" onClick={() => handleEditCert(index)}>
+                              Edit
+                            </button>
+                            <button className="btn btn-sm btn-danger-outline" onClick={() => handleRemoveCert(index)}>
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {cert.description && (
+                        <p className="cert-description">{cert.description}</p>
+                      )}
+                      <div className="cert-meta">
+                        {cert.startDate && (
+                          <span className="cert-date">
+                            {new Date(cert.startDate).toLocaleDateString("en-US", {
+                              year: "numeric", month: "short", day: "numeric",
+                            })}
+                          </span>
+                        )}
+                        {cert.link && (
+                          <a
+                            href={cert.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="cert-link"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            View Certificate
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ================================================== */}
+          {/* PROJECTS — Works for BOTH Students & Faculty!   */}
+          {/* ================================================== */}
+          <div className="profile-card projects-card">
+            <div className="card-header">
+              <h3>Projects</h3>
+              <div className="card-header-actions">
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={handleAddProject}
+                >
+                  Add Project
+                </button>
+                {!editingSections.projects && (
+                  <button className="btn btn-sm btn-ghost" onClick={() => { toggleSection("projects"); setShowPasswordForm(false); }}>
+                    Edit
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="card-body">
+              {/* Project Form (appears when adding/editing) */}
+              {showProjectForm && (
+                <div className="project-form">
+                  <h4 className="project-form-title">
+                    {editingProjectIndex === null
+                      ? "New Project"
+                      : "Edit Project"}
+                  </h4>
+                  <div className="info-grid">
+                    <div className="info-field full-width">
+                      <label>Project Title *</label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={projectForm.title}
+                        onChange={handleProjectFormChange}
+                        placeholder="e.g. Library Management System"
+                      />
+                    </div>
+                    <div className="info-field full-width">
+                      <label>Description</label>
+                      <textarea
+                        name="description"
+                        value={projectForm.description}
+                        onChange={handleProjectFormChange}
+                        placeholder="What does your project do?"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Technologies</label>
+                      <input
+                        type="text"
+                        name="technologies"
+                        value={projectForm.technologies}
+                        onChange={handleProjectFormChange}
+                        placeholder="e.g. React, Node.js, MongoDB"
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Git Code Link</label>
+                      <input
+                        type="url"
+                        name="gitLink"
+                        value={projectForm.gitLink}
+                        onChange={handleProjectFormChange}
+                        placeholder="https://github.com/your/project"
+                      />
+                    </div>
+                    <div className="info-field full-width">
+                      <label>Host Link</label>
+                      <input
+                        type="url"
+                        name="hostLink"
+                        value={projectForm.hostLink}
+                        onChange={handleProjectFormChange}
+                        placeholder="https://your-project.vercel.app"
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>Start Date</label>
+                      <input
+                        type="date"
+                        name="startDate"
+                        value={projectForm.startDate}
+                        onChange={handleProjectFormChange}
+                      />
+                    </div>
+                    <div className="info-field">
+                      <label>End Date</label>
+                      <input
+                        type="date"
+                        name="endDate"
+                        value={projectForm.endDate}
+                        onChange={handleProjectFormChange}
+                      />
+                    </div>
+                  </div>
+                  <div className="project-form-actions">
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={handleSaveProject}
+                    >
+                      Save Project
+                    </button>
+                    <button
+                      className="btn btn-outline btn-sm"
+                      onClick={handleCancelProjectForm}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* List of Projects */}
+              {(!profile.projects || profile.projects.length === 0) && !showProjectForm ? (
+                <div className="empty-projects">
+                  <p>
+                    {editingSections.projects
+                      ? "No projects yet. Click 'Add Project' to showcase your work!"
+                      : "No projects added yet."}
+                  </p>
+                </div>
+              ) : (
+                <div className="projects-list">
+                  {profile.projects.map((project, index) => (
+                    <div className="project-item" key={index}>
+                      <div className="project-item-header">
+                        <h4 className="project-title">
+                          {project.title || "Untitled"}
+                        </h4>
+                        {/* Edit / Delete buttons (only in edit mode) */}
+                        {editingSections.projects && (
+                          <div className="project-item-actions">
+                            <button
+                              className="btn btn-sm btn-outline"
+                              onClick={() => handleEditProject(index)}
+                              title="Edit project"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-sm btn-danger-outline"
+                              onClick={() => handleRemoveProject(index)}
+                              title="Remove project"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Description */}
+                      {project.description && (
+                        <p className="project-description">
+                          {project.description}
+                        </p>
+                      )}
+
+                      {/* Technologies (shown as tags) */}
+                      {project.technologies && (
+                        <div className="project-tech-tags">
+                          {project.technologies
+                            .split(",")
+                            .map((tech, i) => (
+                              <span className="tech-tag" key={i}>
+                                {tech.trim()}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+
+                      {/* Links row — Git code + Host link */}
+                      <div className="project-meta">
+                        {project.startDate && (
+                          <span className="project-date">
+                            {new Date(project.startDate).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                            })}
+                            {project.endDate
+                              ? ` — ${new Date(project.endDate).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                })}`
+                              : " -- Present"}
+                          </span>
+                        )}
+                        <div className="project-links">
+                          {project.gitLink && (
+                            <a
+                              href={project.gitLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="project-link"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Git Code
+                            </a>
+                          )}
+                          {project.hostLink && (
+                            <a
+                              href={project.hostLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="project-link"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Host Link
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Account Information (Read-only) */}
+          <div className="profile-card">
+            <div className="card-header">
+              <h3>Account Information</h3>
             </div>
             <div className="card-body">
               <div className="info-grid">
@@ -708,7 +2205,7 @@ function StudentProfile() {
                 <div className="info-field">
                   <label>Role</label>
                   <p className="field-value role-badge">
-                    {profile.role === "student" ? "🎓 Student" : "👨‍🏫 Faculty"}
+                    {profile.role === "student" ? "Student" : "Faculty"}
                   </p>
                 </div>
                 <div className="info-field">
@@ -741,22 +2238,22 @@ function StudentProfile() {
             </div>
           </div>
 
-          {/* ✏️ Edit Mode: Save / Cancel Buttons */}
-          {isEditing && (
+          {/* Edit Mode: Save / Cancel Buttons */}
+          {Object.keys(editingSections).length > 0 && (
             <div className="profile-edit-actions">
               <button
                 className="btn btn-primary btn-large"
-                onClick={handleSave}
+                onClick={() => handleSave(() => setEditingSections({}))}
                 disabled={saving}
               >
-                {saving ? "⏳ Saving..." : "💾 Save Changes"}
+                {saving ? "Saving..." : "Save All Changes"}
               </button>
               <button
                 className="btn btn-outline btn-large"
                 onClick={handleCancel}
                 disabled={saving}
               >
-                ↩️ Cancel
+                Cancel All
               </button>
             </div>
           )}

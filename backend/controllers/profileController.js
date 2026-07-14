@@ -79,6 +79,34 @@ async function getProfile(req, res) {
       profileImage: profile.profileImage || "",
       bio: profile.bio || "",
 
+      // Social links (coding profiles & portfolio)
+      socialLinks: profile.socialLinks || {},
+
+      // 🚀 Projects (array of project objects — works for both students & faculty)
+      projects: profile.projects || [],
+
+      // 🎓 Education
+      education: profile.education || [],
+
+      // Work experience
+      experience: profile.experience || [],
+
+      // Skills
+      skills: profile.skills || [],
+
+      // Co-curricular & POR free-text
+      coCurricularAndPor: profile.coCurricularAndPor || "",
+
+      // Achievements & Certificates
+      achievements: profile.achievements || "",
+      certificates: profile.certificates || [],
+
+      // Co-curricular activities
+      coCurricular: profile.coCurricular || [],
+
+      // Position of responsibility
+      positionOfResponsibility: profile.positionOfResponsibility || [],
+
       // Profile metadata
       profileId: profile._id,
     };
@@ -106,9 +134,18 @@ async function updateProfile(req, res) {
       "semester", "section", "batch",
       "phone", "gender", "dateOfBirth",
       "currentAddress", "permanentAddress",
-      "fatherName", "motherName", "guardianPhone",
-      "specialization", "qualification",
-      "bio",
+      "fatherName", "motherName", "guardianPhone",            "specialization", "qualification",
+            "bio",
+            "projects",  // 🚀 Projects array — works for students AND teachers
+            "education",  // 🎓 Education entries
+            "socialLinks",  // Social/coding profile links
+            "experience",  // Work experience entries
+            "skills",  // User skills
+            "coCurricular",  // Co-curricular activities
+            "positionOfResponsibility",  // Positions of responsibility
+            "coCurricularAndPor",  // Co-curricular & POR free-text
+            "achievements",  // Free-text achievements
+            "certificates",  // Free-text certificates
     ];
 
     // 📋 Fields that go into the User model (basic info)
@@ -184,6 +221,35 @@ async function updateProfile(req, res) {
       qualification: updatedProfile.qualification || "",
       profileImage: updatedProfile.profileImage || "",
       bio: updatedProfile.bio || "",
+
+      // Social links (coding profiles & portfolio)
+      socialLinks: updatedProfile.socialLinks || {},
+
+      // 🚀 Projects array — works for both students & faculty
+      projects: updatedProfile.projects || [],
+
+      // 🎓 Education
+      education: updatedProfile.education || [],
+
+      // Work experience
+      experience: updatedProfile.experience || [],
+
+      // Skills
+      skills: updatedProfile.skills || [],
+
+      // Co-curricular & POR free-text
+      coCurricularAndPor: updatedProfile.coCurricularAndPor || "",
+
+      // Achievements & Certificates
+      achievements: updatedProfile.achievements || "",
+      certificates: updatedProfile.certificates || [],
+
+      // Co-curricular activities
+      coCurricular: updatedProfile.coCurricular || [],
+
+      // Position of responsibility
+      positionOfResponsibility: updatedProfile.positionOfResponsibility || [],
+
       profileId: updatedProfile._id,
     };
 

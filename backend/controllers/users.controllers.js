@@ -7,7 +7,6 @@
 //   • "Add a bunch of students"         → addUsers()
 
 const User = require("../models/User.model");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../middleware/authMiddleware");
 
@@ -22,24 +21,20 @@ function addUser(req, res) {
     return res.send({ message: "All fields are required" });
   }
 
-  // 🔒 Hash the password before saving (like scrambling an egg — once it's done, you can't unscramble it!)
-  bcrypt.genSalt(10, function (err, salt) {
-    bcrypt.hash(password, salt, function (err, hash) {
-      let newUser = new User({
-        name,
-        email,
-        password: hash, // Store the HASHED password, not the original!
-        phoneNumber,
-      });
+  // 💾 Store password as plain text (no bcrypt)
+  let newUser = new User({
+    name,
+    email,
+    password, // Store the original password directly
+    phoneNumber,
+  });
 
-      newUser.save().then(() => {
-        res.json({
-          message: "User registered successfully",
-          name: newUser.name,
-          email: newUser.email,
-          phoneNumber: newUser.phoneNumber,
-        });
-      });
+  newUser.save().then(() => {
+    res.json({
+      message: "User registered successfully",
+      name: newUser.name,
+      email: newUser.email,
+      phoneNumber: newUser.phoneNumber,
     });
   });
 }
@@ -66,9 +61,8 @@ async function loginUser(req, res) {
       return res.status(404).json({ msg: "User not found. Check your phone number." });
     }
 
-    // 🔐 Compare password with the hashed one in the database
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    // 🔐 Compare password directly (plain text)
+    if (password !== user.password) {
       return res.status(401).json({ msg: "Wrong password! Please try again." });
     }
 

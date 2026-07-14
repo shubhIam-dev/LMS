@@ -55,6 +55,138 @@ let profileSchema = new mongoose.Schema(
     // ========== PROFILE PICTURE ==========
     profileImage: { type: String, default: "" }, // Path to uploaded image
 
+    // ========== SOCIAL LINKS — Coding profiles & portfolio for both students & faculty ==========
+    // Each link is a URL to the user's profile on various platforms
+    socialLinks: {
+      type: {
+        linkedin: { type: String, default: "" },
+        github: { type: String, default: "" },
+        hackerearth: { type: String, default: "" },
+        hackerrank: { type: String, default: "" },
+        codechef: { type: String, default: "" },
+        leetcode: { type: String, default: "" },
+        codeforces: { type: String, default: "" },
+        kaggle: { type: String, default: "" },
+        portfolio: { type: String, default: "" },
+      },
+      default: {}, // Empty object = no links set yet
+    },
+
+    // ========== PROJECTS (for both students & faculty) ==========
+    // Each project has:
+    //    title        -> Name of the project (e.g. "Library Management System")
+    //    description  -> What the project does (short explanation)
+    //    technologies -> Tools used (e.g. "React, Node.js, MongoDB")
+    //    gitLink      -> URL to GitHub/Git repository (source code)
+    //    hostLink     -> URL to live/hosted version of the project
+    //    startDate    -> When you started the project
+    //    endDate      -> When you finished it (or "Present" if ongoing)
+    projects: {
+      type: [
+        {
+          title: { type: String, default: "" },
+          description: { type: String, default: "" },
+          technologies: { type: String, default: "" },
+          gitLink: { type: String, default: "" },
+          hostLink: { type: String, default: "" },
+          startDate: { type: String, default: "" },
+          endDate: { type: String, default: "" },
+        },
+      ],
+      default: [], // Start with an empty list — no projects yet!
+    },
+
+    // ========== CO-CURRICULAR & POSITION OF RESPONSIBILITY ==========
+    coCurricularAndPor: { type: String, default: "" }, // Free-text like bio
+
+    // ========== SKILLS (for both students & faculty) ==========
+    // User-selected skills from a predefined list
+    skills: { type: [String], default: [] },
+
+    // ========== WORK EXPERIENCE (for both students & faculty) ==========
+    experience: {
+      type: [
+        {
+          company: { type: String, default: "" },
+          position: { type: String, default: "" },
+          description: { type: String, default: "" },
+          location: { type: String, default: "" },
+          startDate: { type: String, default: "" },
+          endDate: { type: String, default: "" },
+        },
+      ],
+      default: [],
+    },
+
+    // ========== CO-CURRICULAR ACTIVITIES (for both students & faculty) ==========
+    coCurricular: {
+      type: [
+        {
+          activity: { type: String, default: "" },
+          role: { type: String, default: "" },
+          description: { type: String, default: "" },
+          startDate: { type: String, default: "" },
+          endDate: { type: String, default: "" },
+        },
+      ],
+      default: [],
+    },
+
+    // ========== POSITION OF RESPONSIBILITY (for both students & faculty) ==========
+    positionOfResponsibility: {
+      type: [
+        {
+          position: { type: String, default: "" },
+          organization: { type: String, default: "" },
+          description: { type: String, default: "" },
+          startDate: { type: String, default: "" },
+          endDate: { type: String, default: "" },
+        },
+      ],
+      default: [],
+    },
+
+    // ========== EDUCATION (for both students & faculty) ==========
+    education: {
+      type: [
+        {
+          level: { type: String, default: "" }, // 10th, 12th, Graduation, Post Graduation
+          institute: { type: String, default: "" },
+          degree: { type: String, default: "" },
+          fieldOfStudy: { type: String, default: "" },
+          startDate: { type: String, default: "" },
+          endDate: { type: String, default: "" },
+          gradeType: { type: String, default: "" }, // CGPA, Percentage, Custom
+          grade: { type: String, default: "" },
+          maxGrade: { type: String, default: "" },
+        },
+      ],
+      default: [],
+    },
+
+    // ========== ACHIEVEMENTS ==========
+    achievements: { type: String, default: "" }, // Free-text achievements
+
+    // ========== CERTIFICATES ==========
+    // Each certificate has:
+    //    title        -> Name of the certificate (e.g. "AWS Certified Solutions Architect")
+    //    organization -> Provider organization name (e.g. "Amazon Web Services")
+    //    startDate    -> Date of completion/issue
+    //    link         -> URL to verify the certificate
+    //    description  -> Brief description of what was covered
+    certificates: {
+      type: [
+        {
+          title: { type: String, default: "" },
+          organization: { type: String, default: "" },
+          startDate: { type: String, default: "" },
+          link: { type: String, default: "" },
+          description: { type: String, default: "" },
+        },
+      ],
+      default: [],
+    },
+
     // ========== EXTRA (for future use) ==========
     bio: { type: String, default: "" }, // Short bio / about me
   },
