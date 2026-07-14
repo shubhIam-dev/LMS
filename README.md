@@ -1,6 +1,6 @@
 # College ERP Portal (LMS)
 
-A small MERN app used at Newton School to teach full-stack fundamentals — a College ERP where students log in with a phone number and can browse **Courses**, **Assignments**, and their **Marks**.
+A small MERN app used at Newton School to teach full-stack fundamentals — a College ERP where students log in with a phone number and can browse **Courses**, **Assignments**, **Marks**, and their **Profile**.
 
 The codebase is deliberately kept **small, readable, and free of clever abstractions** so first-timers can trace every request from a click in the browser all the way to a MongoDB document — and back.
 
@@ -14,12 +14,14 @@ LMS/
 │   ├── models/       Mongoose schemas — the shape of each collection
 │   ├── controllers/  The functions that actually do work
 │   ├── routes/       URL → controller mapping
+│   ├── middleware/   Auth guards, JWT verification (NEW!)
+│   ├── uploads/      Profile images uploaded by users (NEW!)
 │   ├── server.js     Entry point — DB connect + middleware + mount routes
 │   └── learn.md      📘 Deep-dive teaching guide for the backend
 │
 ├── frontend/         React + Vite + Redux Toolkit
 │   ├── src/
-│   │   ├── pages/        One component per URL
+│   │   ├── pages/        One component per URL (now includes profile pages!)
 │   │   ├── components/   Reusable bits (Sidebar, ProtectedRoute)
 │   │   ├── store/        Redux store + slices (state management)
 │   │   ├── services/     Thin wrapper around fetch — one file per resource
@@ -130,17 +132,46 @@ npm run dev             # runs Vite on http://localhost:5173
 
 Open http://localhost:5173 in your browser. The frontend expects the backend at `http://localhost:9000` — if you change that, edit `frontend/src/services/api.js`.
 
-### Step 4 — Seed a first user so you can log in
+### Step 4 — Seed your database with demo data (one command)
 
-There's no register page yet. Create a user by hitting the backend directly with `curl`, Postman, or Thunder Client:
+Your fresh MongoDB is empty — nothing to log in with, no courses to browse. The backend ships with a seeder that fills all six collections with realistic connected data (teachers, students, courses, question bank, assignments, a graded submission, marks). It uses **your own** `MONGODB_URI` from `.env` — nothing about it is hardcoded.
+
+```bash
+cd backend
+npm run seed
+```
+
+You'll see something like:
+```
+→ Connecting to MongoDB…
+✅ Connected.
+→ Clearing existing data in the six collections…
+→ Inserting users…
+→ Inserting courses…
+→ Inserting question bank…
+→ Inserting assignments…
+→ Inserting a graded submission for Aria on the DSA homework…
+→ Inserting marks rows…
+
+✅ Seed complete. Log in on the frontend with any of these:
+
+   Aria    → phone 9999999001   password demo
+   Bilal   → phone 9999999002   password demo
+   Chitra  → phone 9999999003   password demo
+```
+
+Open the frontend, log in as any of the demo students, and you'll see a fully-populated dashboard.
+
+> **Warning:** `npm run seed` **wipes all six collections** in your database before inserting. Run it on an empty database or a scratch one — not on real data you care about.
+
+Prefer to make your own user by hand instead? Send this to the backend:
 ```bash
 curl -X POST http://localhost:9000/user/addUser \
   -H "Content-Type: application/json" \
   -d '{"name":"You","email":"you@x.com","password":"test","phoneNumber":9999999999,"role":"student"}'
 ```
-Now log in on http://localhost:5173 with phone `9999999999` and password `test`.
 
-For a full walk-through of creating courses, questions, assignments, submissions, and grades via `curl`, see **[DATABASE.md](DATABASE.md) §5**.
+For a full walkthrough of creating courses, questions, assignments, submissions, and grades via `curl`, see **[DATABASE.md](DATABASE.md) §5**.
 
 ---
 
@@ -148,6 +179,8 @@ For a full walk-through of creating courses, questions, assignments, submissions
 
 | Layer | Tool | Why it's here |
 |-------|------|---------------|
+| Authentication | **JWT** + **bcryptjs** | Token-based auth + password hashing |
+| File Uploads | **Multer** | Handles profile image uploads |
 | Frontend UI | **React 19** | Component-based UI |
 | Frontend build | **Vite** | Fast dev server + build |
 | Routing | **React Router 7** | Client-side navigation |
@@ -284,15 +317,50 @@ Contributions are welcome — this is a teaching repo, so **clarity beats clever
    - Why it's needed
    - What you tested manually (screenshots for UI changes are gold)
 
+### New Features: Student & Faculty Profiles 🆕
+
+This project now includes **profile management** for both students and faculty!
+
+#### 👤 Student Profile (`/profile`)
+- View personal info (name, email, phone, DOB, gender)
+- View academic info (student ID, department, course, branch, year, semester, section, batch)
+- View address (current + permanent)
+- View guardian info (father, mother, guardian phone)
+- View account info (username, role, created date, last update)
+- ✏️ Edit any editable field inline
+- 📸 Upload profile picture (stored via Multer)
+- 🔑 Change password (with current password verification)
+
+#### 👨‍🏫 Faculty Profile (`/faculty-profile`)
+- View personal info
+- View professional info (department, specialization, qualification)
+- View address
+- Upload profile picture
+- Change password
+
+#### 🔐 How it works
+- **JWT Authentication** — Login returns a token stored in localStorage
+- **bcrypt password hashing** — Passwords are hashed (not stored in plaintext!)
+- **Auth Middleware** — Protected routes verify the JWT token before serving data
+- **Multer** — Profile images are uploaded to `backend/uploads/profile-images/`
+
+#### API Endpoints (all protected)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/profile` | Get logged-in user's profile |
+| PUT | `/api/profile` | Update profile info |
+| PUT | `/api/profile/change-password` | Change password |
+| POST | `/api/profile/upload-image` | Upload profile picture |
+
 ### Good first issues
 - Add proper HTTP status codes to every controller (`201`, `400`, `404` — see `backend/learn.md` §9)
-- Hash the password with `bcrypt` instead of storing plain text
 - Move `BASE_URL` in `services/api.js` to a Vite env var (`import.meta.env.VITE_API_URL`)
 - Add pagination to `getAllCourses`
 - Add a Register page (there's already a `userApi.register()` — wire it up)
-- Write a real JWT-based auth flow (backend issues token, frontend stores + sends it)
 - Add a `coursesSlice` and `marksSlice` so page data is cached in Redux
 - Fix `router.get("/deleteCourse", …)` — should be `DELETE`, not `GET`
+- Add form validation on the frontend before submitting profile edits
+- Add a toast notification system for success/error messages on profile page
 
 ### Reporting a bug
 Open an issue with:

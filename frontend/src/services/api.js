@@ -1,46 +1,86 @@
-// 🌐 API Service - This is like a phonebook for the backend
+// 🌐 API Service — This is like a phonebook for the backend
 // It stores all the backend addresses and helps us call them
 
 // The base URL where our backend server is running
 // Localhost means it's on our own computer, port 9000 is the door number
-const BASE_URL = "http://localhost:9000";
+// 📦 Exported so profile pages can use it for image paths too
+export const BASE_URL = "http://localhost:9000";
+
+// 🔑 Helper: Get the JWT token from localStorage
+// This token proves "Hey, I'm already logged in!"
+function getToken() {
+  try {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const parsed = JSON.parse(userData);
+      return parsed.token || null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 // 📞 Helper function to make API calls
 // Think of this like a receptionist who handles all calls to the backend
 async function callApi(endpoint, options = {}) {
   try {
+    // 🔐 Attach JWT token if we have one (for protected routes)
+    const token = getToken();
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    };
+
     // Make the actual fetch request to the backend
     const response = await fetch(`${BASE_URL}${endpoint}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+      headers,
       ...options,
     });
+
+    // 📝 Handle BOTH JSON and plain-text responses
+    // Some old endpoints return plain strings like "User not found"
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text); // Try parsing as JSON
+    } catch {
+      data = text; // If that fails, use the raw text
+    }
+
     // If the server says something went wrong, show the error
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.msg || "Something went wrong");
+      throw new Error(data.msg || data || "Something went wrong");
     }
-    // Convert the response to JSON format so we can use it
-    return await response.json();
+
+    return data;
   } catch (error) {
-    console.error(` API Error (${endpoint}):`, error);
+    console.error(`❌ API Error (${endpoint}):`, error);
     throw error;
   }
 }
 
-// 👤 USER API - All functions related to students
+// 🔑 Export the token helper so other modules can use it too
+export { getToken };
+
+// 👤 USER API — All functions related to students
 export const userApi = {
-  // Log in a user by their phone number
-  // This asks the backend: "Hey, do we have a student with this phone number?"
+  // 🔐 NEW: Proper JWT login
+  // This sends phone + password to the backend, which verifies and returns a token
+  loginWithJWT: (phoneNumber, password) => {
+    return callApi("/user/login", {
+      method: "POST",
+      body: JSON.stringify({ phoneNumber, password }),
+    });
+  },
+
+  // Log in a user by their phone number (OLD way — kept for compatibility)
   login: (phoneNumber) => {
-    // We have to encode the phone number because URLs can't have special characters
     return callApi(`/user/getUser?phoneNumber=${encodeURIComponent(phoneNumber)}`);
   },
 
   // Register a new student
-  // This tells the backend: "Please add this new student to the database"
   register: (userData) => {
     return callApi("/user/addUser", {
       method: "POST",
@@ -49,14 +89,11 @@ export const userApi = {
   },
 };
 
-// 📚 COURSES API - All functions related to courses
+// 📚 COURSES API — All functions related to courses
 export const courseApi = {
-  // Get ALL courses from the database
   getAllCourses: () => {
     return callApi("/course/getAllCourses");
   },
-
-  // Get a specific course by its ID
   getCourseById: (id) => {
     return callApi(`/course/getCourseById`, {
       method: "GET",
@@ -65,26 +102,66 @@ export const courseApi = {
   },
 };
 
-// 📝 ASSIGNMENTS API - All functions related to assignments
+// 📝 ASSIGNMENTS API
 export const assignmentApi = {
-  // Get ALL assignments
   getAllAssignments: () => {
     return callApi("/assignments/getAllAssignments");
   },
 };
 
-// 📊 MARKS API - All functions related to student marks/grades
+// 📊 MARKS API
 export const marksApi = {
-  // Get marks for a specific student by their ID
   getMarksByStudent: (studentId) => {
     return callApi(`/marks/getMarksByStudent?studentId=${encodeURIComponent(studentId)}`);
   },
-
-  // Get ALL marks from the database
   getAllMarks: () => {
     return callApi("/marks/getAllMarks");
   },
-  getMarksById : () =>{
-    
-  }
+};
+
+// 👤 PROFILE API — New! For viewing and editing user profiles
+export const profileApi = {
+  // Get the logged-in user's full profile
+  getProfile: () => {
+    return callApi("/api/profile");
+  },
+
+  // Update profile information
+  updateProfile: (profileData) => {
+    return callApi("/api/profile", {
+      method: "PUT",
+      body: JSON.stringify(profileData),
+    });
+  },
+
+  // Change password (need old + new)
+  changePassword: (currentPassword, newPassword) => {
+    return callApi("/api/profile/change-password", {
+      method: "PUT",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  },
+
+  // Upload profile picture
+  uploadImage: async (file) => {
+    // 📸 For file uploads, we use FormData (not JSON!)
+    const formData = new FormData();
+    formData.append("profileImage", file);
+
+    const token = getToken();
+    const response = await fetch(`${BASE_URL}/api/profile/upload-image`, {
+      method: "POST",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        // Note: Don't set Content-Type for FormData — the browser does it automatically!
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.msg || "Failed to upload image");
+    }
+    return data;
+  },
 };
