@@ -3,16 +3,14 @@ let {
     submitAssignment,
     getSubmissionsByStudent,
     getSubmissionsByAssignment,
-    gradeSubmission,
-    gradeManual
+    gradeSubmission
 } = require("../controllers/submissionController.js");
 
 const router = express.Router();
 
-router.post("/submit", submitAssignment);
-router.get("/getByStudent", getSubmissionsByStudent);
-router.get("/getByAssignment", getSubmissionsByAssignment);
-router.post("/grade", gradeSubmission);
-router.post("/gradeManual", gradeManual);
+router.post("/submit",              submitAssignment);
+router.get("/getByStudent",         getSubmissionsByStudent);
+router.get("/getByAssignment",      getSubmissionsByAssignment);
+router.post("/grade",               gradeSubmission);
 
 module.exports = router;
