@@ -13,15 +13,19 @@ let mongoose = require("mongoose");
 let questionSchema = new mongoose.Schema({
     text: { type: String, required: true },
 
-    // What kind of question is this? The frontend can render each type
-    // differently (MCQ options, short-answer textbox, code editor, …).
+    //  assignment this question belong to
+    assignmentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "asignments",
+        required: true
+    },
     questionType: {
         type: String,
         enum: ["mcq", "short", "long", "code", "truefalse"],
         default: "short"
     },
 
-    // Only used when questionType === "mcq".
+    // "mcq".
     options: [{ type: String }],
 
     // The expected answer. Used later by an auto-grading endpoint that

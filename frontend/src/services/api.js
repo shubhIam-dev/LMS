@@ -34,6 +34,7 @@ async function callApi(endpoint, options = {}) {
     };
 
     // Make the actual fetch request to the backend
+    
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       headers,
       ...options,

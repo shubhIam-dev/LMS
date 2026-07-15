@@ -23,7 +23,7 @@ function deleteAssignment(req, res) {
 }
 
 function getAllAssignments(req, res) {
-    Assignment.find()
+    Assignment.find().populate("questions")
         .then((data) => {
             res.json(data);
         })
@@ -32,5 +32,28 @@ function getAllAssignments(req, res) {
         });
 }
 
-module.exports = { addAssignment, deleteAssignment, getAllAssignments };
+function getAllAssignmentsByCourse(req,res){
+    const{courseId}=req.params
+    Assignment.find({courseId:courseId})
+    .populate("questions")
+    .then((data)=>res.json(data))
+    .catch(err=>res.status(500).json({msg:"Error",error:err.message}))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+}
+function UpdateAssignment(req,res){
+    const{id}=req.params
+    const updateData=req.body
+    Assignment.findByIdAndUpdate(id,updateData,{new:true})
+    .populate("questions")
+    .then((data)=>{
+        if (!data){
+            return res.status(404).json({msg:"Not Found"})
+        }else{
+            return res.status(200).json({msg:"Updated", assignment: data})
+        }
+    })
+    .catch(err => res.status(500).json({msg:"Error", error: err.message}))
+}
+
+module.exports = { addAssignment, deleteAssignment, getAllAssignments,getAllAssignmentsByCourse,UpdateAssignment};
 
