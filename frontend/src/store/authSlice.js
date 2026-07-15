@@ -38,7 +38,6 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: readUserFromStorage(),
-    viewMode: null,
     status: "idle",
     error: null,
   },
@@ -47,15 +46,11 @@ const authSlice = createSlice({
       clearToken();
       localStorage.removeItem(USER_KEY);
       state.user = null;
-      state.viewMode = "student";
       state.status = "idle";
       state.error = null;
     },
     clearError(state) {
       state.error = null;
-    },
-    setViewMode(state, action) {
-      state.viewMode = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -76,17 +71,11 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError, setViewMode } = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 
 // Selectors
 export const selectUser = (s) => s.auth.user;
 export const selectRole = (s) => s.auth.user?.role || null;
-export const selectViewMode = (s) => {
-  if (s.auth.viewMode) return s.auth.viewMode;
-  const role = s.auth.user?.role;
-  if (role === "faculty") return "teacher";
-  return "student";
-};
 export const selectAuthStatus = (s) => s.auth.status;
 export const selectAuthError = (s) => s.auth.error;
 export const selectIsAuthed = (s) => Boolean(s.auth.user);

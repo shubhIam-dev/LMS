@@ -1,32 +1,28 @@
 // Sidebar — navigation for logged-in pages.
 // Reads the current user from Redux and dispatches logout().
-// 🆕 Now shows "My Profile" link — takes you to student or faculty profile
-//    based on your role!
-// 🎭 Teachers can switch between "Student View" and "Teacher View" via dropdown!
 
 import { NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectUser, selectViewMode, logout, setViewMode } from "../store/authSlice";
+import { selectUser, selectRole, logout } from "../store/authSlice";
+
+const ROLE_LABEL = {
+  student: "Student",
+  teacher: "Teacher",
+  superadmin: "Super Admin",
+};
 
 function Sidebar() {
   const user = useSelector(selectUser);
-  const viewMode = useSelector(selectViewMode);
+  const role = useSelector(selectRole);
   const dispatch = useDispatch();
 
-  const isFaculty = user?.role === "faculty";
-  const isStaff = isFaculty;
-  const isTeacher = isFaculty || viewMode === "teacher";
-
-  function handleViewSwitch(e) {
-    dispatch(setViewMode(e.target.value));
-  }
-
-  // Navigation items — same for both views, only the profile link adapts
+  const isStaff = role === "teacher" || role === "superadmin";
   const navItems = [
     { path: "/dashboard", label: "Dashboard" },
     { path: "/courses", label: "Courses" },
     { path: "/assignments", label: "Assignments" },
     { path: "/marks", label: "Marks" },
+    // Teachers and superadmins get the create/manage console.
     ...(isStaff ? [{ path: "/manage", label: "Teacher Console" }] : []),
   ];
 
@@ -42,27 +38,10 @@ function Sidebar() {
           {user?.name?.[0]?.toUpperCase() || "?"}
         </div>
         <div className="user-info">
-          <p className="user-name">{user?.name || "Student"}</p>
-          <p className="user-role">
-            {viewMode === "teacher" ? "Faculty" : "Student"}
-          </p>
+          <p className="user-name">{user?.name || "User"}</p>
+          <p className="user-role">{ROLE_LABEL[role] || "Student"}</p>
         </div>
       </div>
-
-      {/* 🎭 Role Switcher — only visible for teachers */}
-      {isTeacher && (
-        <div className="role-switcher">
-          <label className="role-switcher-label">View as:</label>
-          <select
-            className="role-switcher-select"
-            value={viewMode}
-            onChange={handleViewSwitch}
-          >
-            <option value="teacher">👨‍🏫 Teacher</option>
-            <option value="student">🎓 Student</option>
-          </select>
-        </div>
-      )}
 
       <nav className="sidebar-nav">
         {navItems.map((item) => (

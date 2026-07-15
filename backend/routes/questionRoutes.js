@@ -9,4 +9,19 @@ router.get("/getAllQuestions", getAllQuestions);
 router.get("/getQuestionById", getQuestionById);
 router.post("/deleteQuestion", deleteQuestion);
 
+let { authenticate, authorize } = require("../middleware/auth");
+
+const router = express.Router();
+
+// Reads: any signed-in user.
+router.get("/getAllQuestions", authenticate, getAllQuestions);
+router.get("/getQuestionById", authenticate, getQuestionById);
+
+// Writes: staff only (teachers build the question bank).
+const staff = [authenticate, authorize("teacher", "superadmin")];
+router.post("/addQuestion", staff, addQuestion);
+router.post("/addQuestions", staff, addQuestions);
+router.post("/deleteQuestion", staff, deleteQuestion);
+
+
 module.exports = router;

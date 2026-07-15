@@ -1,6 +1,7 @@
 # Frontend — learn.md
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Welcome! This file explains **what the frontend is, how React thinks, and every file in this folder**. Read it top-to-bottom — every section points at real code you can open.
 
 ---
@@ -27,6 +28,8 @@ This project builds a **Single Page Application (SPA)** — one HTML file (`inde
 | **JSX** | HTML-in-JavaScript syntax | Lets you write `<div>` inside `.jsx` files |
 | **Fetch API** | Built-in browser way to call HTTP endpoints | We wrap it in `services/api.js` |
 =======
+=======
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 Your guided tour of the frontend. Read it top to bottom with the code open. By
 the end you'll understand how a page is built, how login works, how data flows,
 and where to add your own screen.
@@ -55,6 +58,9 @@ one HTML file (`index.html`) and JavaScript swaps content as you navigate.
 | **React Router** | Navigate between pages, no reload | SPAs need client routing |
 | **Redux Toolkit** | Global state (who's logged in) | One source of truth, DevTools |
 | **Fetch API** | Calls the backend | Wrapped in `services/api.js` |
+<<<<<<< HEAD
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
+=======
 >>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 
 ---
@@ -63,6 +69,7 @@ one HTML file (`index.html`) and JavaScript swaps content as you navigate.
 
 ```
 frontend/
+<<<<<<< HEAD
 <<<<<<< HEAD
 ├── index.html              ← the ONLY html file — has <div id="root"></div>
 ├── vite.config.js          ← Vite config (just enables the React plugin)
@@ -148,6 +155,8 @@ Any time the frontend needs data, it goes through this file. Never scatter `fetc
 - Every call handles errors consistently
 - Pages just call `courseApi.getAllCourses()` and get clean data back
 =======
+=======
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 ├── index.html            the ONLY html file — has <div id="root">
 └── src/
     ├── main.jsx          entry: wraps <App/> in the Redux <Provider>
@@ -236,12 +245,16 @@ dispatch(logout());
 
 Never scatter `fetch()` across pages. Everything goes through here so the base
 URL, error handling, and **auth token** are in one place.
+<<<<<<< HEAD
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
+=======
 >>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 
 ```js
 const BASE_URL = "http://localhost:9000";
 
 async function callApi(endpoint, options = {}) {
+<<<<<<< HEAD
 <<<<<<< HEAD
     const response = await fetch(`${BASE_URL}${endpoint}`, {
         headers: { "Content-Type": "application/json", ...options.headers },
@@ -425,6 +438,8 @@ const data = await fetch(url).then(r => r.json());
 
 ## 7. Running it locally
 =======
+=======
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
   const token = getToken();                        // from localStorage
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
@@ -581,11 +596,15 @@ gradients. When you add a screen it should look like it was always part of the a
 ---
 
 ## 12. Running locally
+<<<<<<< HEAD
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
+=======
 >>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 
 ```bash
 cd frontend
 npm install
+<<<<<<< HEAD
 <<<<<<< HEAD
 npm run dev
 # open http://localhost:5173
@@ -635,6 +654,8 @@ Make sure the **backend is running on `http://localhost:9000`** (see backend/lea
 
 If you can build a page that fetches data, shows loading/error/empty states, and lets a user filter it — you understand React well enough to build almost anything.
 =======
+=======
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 npm run dev          # http://localhost:5173
 ```
 
@@ -679,4 +700,7 @@ runs ESLint.
 > `ProtectedRoute` gates pages by login and role. Effects fetch data on mount;
 > data flows down, events (and `dispatch`) flow up. Style from the design tokens.
 > Everything else is a variation on that.**
+<<<<<<< HEAD
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
+=======
 >>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232

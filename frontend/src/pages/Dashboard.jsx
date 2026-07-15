@@ -6,14 +6,13 @@
 
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { courseApi, assignmentApi, marksApi } from "../services/api";
+import { courseApi, assignmentApi } from "../services/api";
 import { Link } from "react-router-dom";
-import { selectUser, selectViewMode } from "../store/authSlice";
+import { selectUser } from "../store/authSlice";
 
 function Dashboard() {
   // Get the currently logged-in user's info from Redux
   const user = useSelector(selectUser);
-  const viewMode = useSelector(selectViewMode);
 
   // State to store data we fetch from the backend
   const [courses, setCourses] = useState([]);

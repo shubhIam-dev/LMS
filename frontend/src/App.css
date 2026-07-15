@@ -1,40 +1,72 @@
-/* ============================================================
+/* ============================================================================
+   ICON SYSTEM — Lucide-style line icons as CSS masks (recolorable, no images).
+   Each var is masked over a background-color, so any element can wear any icon
+   in any color.
+   ============================================================================ */
+:root {
+  --ic-dashboard: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='9'/%3E%3Crect x='14' y='3' width='7' height='5'/%3E%3Crect x='14' y='12' width='7' height='9'/%3E%3Crect x='3' y='16' width='7' height='5'/%3E%3C/svg%3E");
+  --ic-book: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'/%3E%3Cpath d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'/%3E%3C/svg%3E");
+  --ic-clipboard: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8' y='2' width='8' height='4' rx='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3Cpath d='M9 12h6'/%3E%3Cpath d='M9 16h6'/%3E%3C/svg%3E");
+  --ic-award: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='6'/%3E%3Cpath d='M15.5 13.5 17 22l-5-3-5 3 1.5-8.5'/%3E%3C/svg%3E");
+  --ic-mail: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='m22 7-10 5L2 7'/%3E%3C/svg%3E");
+  --ic-cap: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 10 12 5 2 10l10 5 10-5z'/%3E%3Cpath d='M6 12v5c0 1 2 3 6 3s6-2 6-3v-5'/%3E%3C/svg%3E");
+  --ic-logout: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/%3E%3Cpath d='m16 17 5-5-5-5'/%3E%3Cpath d='M21 12H9'/%3E%3C/svg%3E");
+  --ic-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E");
+  --ic-inbox: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E");
+  --ic-plus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E");
+}
+
+/* Reusable helper: mask an icon over a colored surface */
+.icon-mask {
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+
+/* ============================================================================
    LAYOUT
-   ============================================================ */
+   ============================================================================ */
 .app-layout { min-height: 100vh; display: flex; }
 .app-layout .main-content { flex: 1; min-height: 100vh; }
 .app-layout.has-sidebar .main-content { margin-left: var(--sidebar-width); }
 
 
-/* ============================================================
+/* ============================================================================
    LOGIN
-   ============================================================ */
+   ============================================================================ */
 .login-page {
   min-height: 100vh;
   width: 100%;
   display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  background: var(--paper);
-  position: relative;
-  overflow: hidden;
+  grid-template-columns: 1.1fr 1fr;
+  background: var(--bg);
 }
 
-/* Soft complementary wash — cobalt on one corner, amber on the other */
+/* Left brand panel — indigo→violet gradient with a soft pattern */
 .login-page::before {
-  content: "";
-  position: absolute;
-  inset: 0;
+  content: "College ERP Portal";
+  grid-column: 1;
+  display: flex;
+  align-items: flex-end;
+  padding: 64px 6vw;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(34px, 4vw, 58px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #fff;
   background:
-    radial-gradient(circle at 8% 12%, rgba(30, 75, 216, 0.10) 0, transparent 45%),
-    radial-gradient(circle at 92% 82%, rgba(227, 160, 8, 0.11) 0, transparent 45%);
-  pointer-events: none;
-  z-index: 0;
+    radial-gradient(circle at 78% 18%, rgba(255,255,255,0.16) 0, transparent 40%),
+    radial-gradient(circle at 15% 85%, rgba(245,158,11,0.28) 0, transparent 45%),
+    linear-gradient(150deg, var(--primary-700) 0%, var(--violet-600) 100%);
 }
 
 .login-container {
-  position: relative;
-  z-index: 2;
-  grid-column: 2 / -1;
+  grid-column: 2;
   align-self: center;
   justify-self: center;
   width: 100%;
@@ -83,19 +115,6 @@
   font-size: 14px;
   line-height: 1.5;
   max-width: 300px;
-}
-
-.login-icon {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 20px;
 }
 .login-icon::before {
   content: "";
@@ -864,11 +883,6 @@
   border-radius: 999px;
 }
 
-.edu-degree {
-  font-size: 13px;
-  color: var(--ink-2);
-  font-weight: 500;
-}
 
 /* ============================================================
    RESPONSIVE

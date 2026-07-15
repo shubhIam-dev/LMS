@@ -1,15 +1,20 @@
-let express = require("express");
-let { addCourse, updateCourseById, deleteCourse, addCourses, getCourseById, getAllCourses, enrollStudent, getCourseStudents } = require("../controllers/courses.controllers.js");
+let express = require("express")
+let { addCourse, updateCourseById, deleteCourse, addCourses, getCourseById, getAllCourses, enrollStudent, getCourseStudents } = require("../controllers/courses.controllers.js")
+let { authenticate, authorize } = require("../middleware/auth")
 
-const router = express.Router();
+const router = express.Router()
 
-router.post("/addCourse", addCourse);
-router.post("/addCourses", addCourses);
-router.post("/updateCourseById", updateCourseById);
-router.post("/deleteCourse", deleteCourse);
-router.post("/enrollStudent", enrollStudent);
-router.get("/getAllCourses", getAllCourses);
-router.get("/getCourseById", getCourseById);
-router.get("/getStudents", getCourseStudents);
+// Any signed-in user can read the catalog.
+router.get("/getAllCourses", authenticate, getAllCourses)
+router.get("/getCourseById", authenticate, getCourseById)
+
+// Creating / editing courses and enrolling students is staff-only.
+const staff = [authenticate, authorize("teacher", "superadmin")]
+router.post("/addCourse", staff, addCourse)
+router.post("/addCourses", staff, addCourses)
+router.post("/updateCourseById", staff, updateCourseById)
+router.post("/deleteCourse", staff, deleteCourse)   // was GET — POST is correct for a mutation
+router.post("/enrollStudent", staff, enrollStudent)
+router.get("/getStudents", staff, getCourseStudents)
 
 module.exports = router;
