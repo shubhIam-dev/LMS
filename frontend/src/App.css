@@ -1,40 +1,72 @@
-/* ============================================================
+/* ============================================================================
+   ICON SYSTEM — Lucide-style line icons as CSS masks (recolorable, no images).
+   Each var is masked over a background-color, so any element can wear any icon
+   in any color.
+   ============================================================================ */
+:root {
+  --ic-dashboard: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='9'/%3E%3Crect x='14' y='3' width='7' height='5'/%3E%3Crect x='14' y='12' width='7' height='9'/%3E%3Crect x='3' y='16' width='7' height='5'/%3E%3C/svg%3E");
+  --ic-book: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'/%3E%3Cpath d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'/%3E%3C/svg%3E");
+  --ic-clipboard: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8' y='2' width='8' height='4' rx='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3Cpath d='M9 12h6'/%3E%3Cpath d='M9 16h6'/%3E%3C/svg%3E");
+  --ic-award: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='6'/%3E%3Cpath d='M15.5 13.5 17 22l-5-3-5 3 1.5-8.5'/%3E%3C/svg%3E");
+  --ic-mail: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='m22 7-10 5L2 7'/%3E%3C/svg%3E");
+  --ic-cap: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 10 12 5 2 10l10 5 10-5z'/%3E%3Cpath d='M6 12v5c0 1 2 3 6 3s6-2 6-3v-5'/%3E%3C/svg%3E");
+  --ic-logout: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/%3E%3Cpath d='m16 17 5-5-5-5'/%3E%3Cpath d='M21 12H9'/%3E%3C/svg%3E");
+  --ic-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E");
+  --ic-inbox: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E");
+  --ic-plus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E");
+}
+
+/* Reusable helper: mask an icon over a colored surface */
+.icon-mask {
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+
+/* ============================================================================
    LAYOUT
-   ============================================================ */
+   ============================================================================ */
 .app-layout { min-height: 100vh; display: flex; }
 .app-layout .main-content { flex: 1; min-height: 100vh; }
 .app-layout.has-sidebar .main-content { margin-left: var(--sidebar-width); }
 
 
-/* ============================================================
+/* ============================================================================
    LOGIN
-   ============================================================ */
+   ============================================================================ */
 .login-page {
   min-height: 100vh;
   width: 100%;
   display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  background: var(--paper);
-  position: relative;
-  overflow: hidden;
+  grid-template-columns: 1.1fr 1fr;
+  background: var(--bg);
 }
 
-/* Soft complementary wash — cobalt on one corner, amber on the other */
+/* Left brand panel — indigo→violet gradient with a soft pattern */
 .login-page::before {
-  content: "";
-  position: absolute;
-  inset: 0;
+  content: "College ERP Portal";
+  grid-column: 1;
+  display: flex;
+  align-items: flex-end;
+  padding: 64px 6vw;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(34px, 4vw, 58px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #fff;
   background:
-    radial-gradient(circle at 8% 12%, rgba(30, 75, 216, 0.10) 0, transparent 45%),
-    radial-gradient(circle at 92% 82%, rgba(227, 160, 8, 0.11) 0, transparent 45%);
-  pointer-events: none;
-  z-index: 0;
+    radial-gradient(circle at 78% 18%, rgba(255,255,255,0.16) 0, transparent 40%),
+    radial-gradient(circle at 15% 85%, rgba(245,158,11,0.28) 0, transparent 45%),
+    linear-gradient(150deg, var(--primary-700) 0%, var(--violet-600) 100%);
 }
 
 .login-container {
-  position: relative;
-  z-index: 2;
-  grid-column: 2 / -1;
+  grid-column: 2;
   align-self: center;
   justify-self: center;
   width: 100%;
@@ -85,6 +117,7 @@
   max-width: 300px;
 }
 
+/* Graduation-cap badge */
 .login-icon {
   display: inline-flex;
   align-items: center;
@@ -156,134 +189,123 @@
   opacity: 0.55; cursor: not-allowed;
   background: var(--muted); border-color: var(--muted); box-shadow: none;
 }
+.login-btn:hover { background: var(--primary-700); box-shadow: 0 10px 26px rgba(79,70,229,0.38); }
+.login-btn:active { transform: translateY(1px); }
+.login-btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
 
 .login-footer {
-  margin-top: 32px;
+  margin-top: 28px;
   padding-top: 20px;
   border-top: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
-  line-height: 1.5;
 }
 
 .error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: var(--danger-soft);
   color: var(--danger);
-  padding: 10px 14px;
-  border-left: 3px solid var(--danger);
+  padding: 11px 15px;
+  border-radius: var(--r-sm);
   margin-bottom: 18px;
-  font-size: 13px;
-  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 13.5px;
+  font-weight: 500;
 }
 
 
-/* ============================================================
+/* ============================================================================
    SIDEBAR
-   ============================================================ */
+   ============================================================================ */
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--ink);
-  color: var(--on-dark);
+  background: var(--sidebar);
+  color: var(--sidebar-text);
   height: 100vh;
   position: fixed;
-  left: 0;
-  top: 0;
+  left: 0; top: 0;
   display: flex;
   flex-direction: column;
   z-index: 40;
-  border-right: 1px solid var(--on-dark-fade);
 }
 
 .sidebar-header {
-  padding: 28px 24px 22px;
-  border-bottom: 1px solid var(--on-dark-fade);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 22px 20px;
+  border-bottom: 1px solid var(--sidebar-line);
 }
 .sidebar-logo {
-  display: inline-block;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-variation-settings: 'opsz' 24, 'SOFT' 100, 'WONK' 1;
-  font-size: 22px;
-  line-height: 34px;
-  text-align: center;
-  font-style: italic;
-  font-weight: 500;
-  margin-bottom: 10px;
+  width: 40px; height: 40px;
+  border-radius: 11px;
+  background: linear-gradient(140deg, var(--primary-500), var(--violet-500));
+  box-shadow: var(--shadow-primary);
+  position: relative;
+  flex-shrink: 0;
 }
-.sidebar-logo::before { content: "C"; }
+.sidebar-logo::after {
+  content: "";
+  position: absolute; inset: 0; margin: auto;
+  width: 24px; height: 24px;
+  background: #fff;
+  -webkit-mask: var(--ic-cap) center/contain no-repeat;
+  mask: var(--ic-cap) center/contain no-repeat;
+}
 .sidebar-header h2 {
-  font-family: var(--font-display);
-  font-variation-settings: 'opsz' 60, 'SOFT' 40, 'WONK' 0;
-  font-weight: 500;
-  font-size: 22px;
-  letter-spacing: -0.01em;
-  color: var(--on-dark);
-}
-.sidebar-header h2::after {
-  content: " — Registry";
-  color: var(--on-dark-mute);
-  font-style: italic;
-  font-weight: 400;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
 }
 
 .sidebar-user {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--on-dark-fade);
+  margin: 16px 16px 8px;
+  padding: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--sidebar-line);
+  border-radius: var(--r);
 }
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 42px; height: 42px;
   border-radius: 50%;
-  background: var(--primary);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: linear-gradient(140deg, var(--amber-400), var(--amber-600));
+  color: #3a2a00;
+  display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 18px; font-weight: 800;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 .user-info { min-width: 0; }
 .user-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 14px; font-weight: 600; color: #fff;
   text-transform: capitalize;
-  color: var(--on-dark);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .user-role {
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--on-dark-mute);
-  margin-top: 2px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--sidebar-mut); margin-top: 2px;
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: 18px 12px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  overflow-y: auto;
 }
 .sidebar-nav::before {
-  content: "Sections";
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--on-dark-mute);
-  padding: 0 12px 10px;
+  content: "Menu";
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--sidebar-mut);
+  padding: 8px 14px 6px;
 }
 
 .nav-link {
@@ -872,8 +894,6 @@
   :root { --sidebar-width: 100%; }
   .app-layout.has-sidebar { flex-direction: column; }
   .sidebar {
-    width: 100%;
-    height: auto;
     position: relative;
     flex-direction: row;
     align-items: center;

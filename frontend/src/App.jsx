@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
 import Assignments from "./pages/Assignments";
 import Marks from "./pages/Marks";
+import Manage from "./pages/Manage";
+import AssignmentDetail from "./pages/AssignmentDetail";
 import { selectIsAuthed } from "./store/authSlice";
 import "./App.css";
 
@@ -59,6 +61,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Marks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/assignments/:id"
+            element={
+              <ProtectedRoute>
+                <AssignmentDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manage"
+            element={
+              <ProtectedRoute roles={["teacher", "superadmin"]}>
+                <Manage />
               </ProtectedRoute>
             }
           />

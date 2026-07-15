@@ -32,7 +32,14 @@ let assignmentSchema = new mongoose.Schema({
     totalMarks: { type: Number, default: 0 },
 
     createdOn: { type: Date, default: Date.now },
-    dueOn:     { type: Date }
+    dueOn:     { type: Date },
+
+    // Which teacher created this assignment. Other teachers can REUSE it —
+    // cloning it into their own course via /assignments/reuse.
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model("asignments", assignmentSchema)

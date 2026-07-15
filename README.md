@@ -29,10 +29,12 @@ LMS/
 │
 ├── fullflow.md       End-to-end walkthrough of a real request
 ├── DATABASE.md       📘 Every collection, every relationship, curl walkthrough of a full flow, roadmap
+├── flowofbackend.md  📘 A teacher's journey: create course → questions → assignment → enroll → grade
+├── AUTH.md           📘 Roles (student / teacher / superadmin), JWT auth, and the permission matrix
 └── README.md         You are here
 ```
 
-**Reading order:** `README.md` (this file) → `DATABASE.md` for the data model → `backend/learn.md` and `frontend/learn.md` for a code tour.
+**Reading order:** `README.md` (this file) → `AUTH.md` for roles & login → `DATABASE.md` for the data model → `flowofbackend.md` for how a teacher drives it → `backend/learn.md` and `frontend/learn.md` for a code tour.
 
 ---
 
@@ -130,17 +132,48 @@ npm run dev             # runs Vite on http://localhost:5173
 
 Open http://localhost:5173 in your browser. The frontend expects the backend at `http://localhost:9000` — if you change that, edit `frontend/src/services/api.js`.
 
-### Step 4 — Seed a first user so you can log in
+### Step 4 — Seed your database with demo data (one command)
 
-There's no register page yet. Create a user by hitting the backend directly with `curl`, Postman, or Thunder Client:
+Your fresh MongoDB is empty — nothing to log in with, no courses to browse. The backend ships with a seeder that fills all six collections with realistic connected data (teachers, students, courses, question bank, assignments, a graded submission, marks). It uses **your own** `MONGODB_URI` from `.env` — nothing about it is hardcoded.
+
 ```bash
-curl -X POST http://localhost:9000/user/addUser \
-  -H "Content-Type: application/json" \
-  -d '{"name":"You","email":"you@x.com","password":"test","phoneNumber":9999999999,"role":"student"}'
+cd backend
+npm run seed
 ```
-Now log in on http://localhost:5173 with phone `9999999999` and password `test`.
 
-For a full walk-through of creating courses, questions, assignments, submissions, and grades via `curl`, see **[DATABASE.md](DATABASE.md) §5**.
+You'll see something like:
+```
+→ Connecting to MongoDB…
+✅ Connected.
+→ Clearing existing data in the six collections…
+→ Inserting users…
+→ Inserting courses…
+→ Inserting question bank…
+→ Inserting assignments…
+→ Inserting a graded submission for Aria on the DSA homework…
+→ Inserting marks rows…
+
+✅ Seed complete. Log in on the frontend with any of these:
+
+   ROLE         PHONE         PASSWORD
+   superadmin   9000000000    admin
+   teacher      9000000001    teach     (Prof. Rao)
+   student      9999999001    demo      (Aria)
+   ...
+```
+
+The seeder creates **one of each role** — a superadmin, two teachers, three students. Log in as any of them and you'll see a fully-populated dashboard with their role shown in the sidebar. See **[AUTH.md](AUTH.md)** for what each role can do.
+
+> **Warning:** `npm run seed` **wipes all six collections** in your database before inserting. Run it on an empty database or a scratch one — not on real data you care about.
+
+Prefer to make your own account by hand instead? Register a student (passwords are hashed automatically):
+```bash
+curl -X POST http://localhost:9000/user/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"You","email":"you@x.com","password":"test","phoneNumber":9999999999}'
+```
+
+For roles, login, and the full permission matrix, see **[AUTH.md](AUTH.md)**. For a full walkthrough of creating courses, questions, assignments, submissions, and grades via `curl`, see **[DATABASE.md](DATABASE.md) §5**.
 
 ---
 
@@ -156,8 +189,9 @@ For a full walk-through of creating courses, questions, assignments, submissions
 | Backend framework | **Express 5** | HTTP routing + middleware |
 | Database | **MongoDB** | Document store — flexible for teaching |
 | ODM | **Mongoose** | Schemas + query helpers for Mongo |
+| Auth | **jsonwebtoken + bcryptjs** | JWT login + hashed passwords, role-based access ([AUTH.md](AUTH.md)) |
 | Config | **dotenv** | Loads secrets from `.env` |
-| Fonts | **Fraunces + DM Sans** (Google Fonts) | Display serif + UI sans |
+| Fonts | **Plus Jakarta Sans + Inter** (Google Fonts) | Headings + UI |
 
 ---
 
@@ -259,40 +293,52 @@ Contributions are welcome — this is a teaching repo, so **clarity beats clever
 4. **No new dependencies without discussing first.** Every dependency is another thing students have to learn.
 5. **Don't reformat files you didn't change.** Diffs should show intent, not whitespace churn.
 
-### How to contribute
-1. **Fork** this repo on GitHub.
-2. **Clone** your fork locally:
-   ```bash
-   git clone https://github.com/YOUR-USERNAME/LMS.git
-   cd LMS
-   ```
-3. **Create a branch** off `main`. Use a descriptive name:
-   ```bash
-   git checkout -b fix-marks-percentage-color
-   ```
-4. **Make the change.** Run both frontend and backend locally to verify.
-5. **Commit** with a message that explains the **why**, not just the **what**:
-   ```
-   Fix percentage color threshold for grades below 40
+### Student workflow — pull, branch, build, PR
 
-   The old cutoff at 35 was inconsistent with the pass/fail line
-   used elsewhere in the report.
-   ```
-6. **Push** and open a **Pull Request** against `shubhIam-dev/LMS` `main`.
-7. In the PR description, explain:
-   - What the change does
-   - Why it's needed
-   - What you tested manually (screenshots for UI changes are gold)
+You don't need to fork — as a contributor you work on a **branch** and open a
+Pull Request. Never commit directly to `main`.
 
-### Good first issues
-- Add proper HTTP status codes to every controller (`201`, `400`, `404` — see `backend/learn.md` §9)
-- Hash the password with `bcrypt` instead of storing plain text
-- Move `BASE_URL` in `services/api.js` to a Vite env var (`import.meta.env.VITE_API_URL`)
-- Add pagination to `getAllCourses`
-- Add a Register page (there's already a `userApi.register()` — wire it up)
-- Write a real JWT-based auth flow (backend issues token, frontend stores + sends it)
-- Add a `coursesSlice` and `marksSlice` so page data is cached in Redux
-- Fix `router.get("/deleteCourse", …)` — should be `DELETE`, not `GET`
+```bash
+# 1. Get the latest main
+git clone https://github.com/shubhIam-dev/LMS.git   # first time only
+cd LMS
+git checkout main
+git pull origin main
+
+# 2. Create your own branch (name it after what you're doing)
+git checkout -b yourname/register-page
+
+# 3. Set up and run the app (see "Running it locally" above)
+#    backend:  cd backend && npm install && npm run seed && npm start
+#    frontend: cd frontend && npm install && npm run dev
+
+# 4. Make your change, then commit (explain the WHY)
+git add .
+git commit -m "Add a register page wired to /user/register"
+
+# 5. Push your branch
+git push -u origin yourname/register-page
+```
+
+Then on GitHub click **"Compare & pull request"**, target `main`, and describe:
+- What the change does
+- Why it's needed
+- What you tested manually (screenshots for UI changes are gold)
+
+Keep your branch up to date with `git pull origin main` and merge/rebase if
+`main` has moved on.
+
+### Pick an issue
+
+Browse the [Issues tab](https://github.com/shubhIam-dev/LMS/issues) — tasks are
+labelled `good first issue`, `frontend`/`backend`/`docs`, and
+`difficulty:easy|medium|hard`. Comment on one to claim it before starting.
+
+> **Maintainers:** to populate the Issues tab with the starter tasks, run
+> `bash scripts/create-issues.sh` once (needs the GitHub CLI: `gh auth login`).
+
+The roadmaps in [AUTH.md](AUTH.md), [DATABASE.md](DATABASE.md) §7, and
+[flowofbackend.md](flowofbackend.md) list larger features worth building.
 
 ### Reporting a bug
 Open an issue with:

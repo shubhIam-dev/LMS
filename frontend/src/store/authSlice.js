@@ -1,48 +1,36 @@
-// authSlice — Redux slice that owns "who is logged in"
+// authSlice — owns "who is logged in" via a JWT.
 //
-// A "slice" in Redux Toolkit bundles:
-//   • initial state
-//   • reducers (functions that describe how state changes)
-//   • thunks (functions that do async work like calling the API)
-//
-// Everything auth-related lives here so pages don't have to know
-// HOW login works — they just dispatch(loginUser(...)).
+// The login thunk POSTs credentials to /user/login, which returns { token, user }.
+// We keep the token (for the Authorization header) and the user (for the UI,
+// including their role) in localStorage so a refresh stays logged in.
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { userApi } from "../services/api";
+import { userApi, setToken, clearToken } from "../services/api";
 
-const STORAGE_KEY = "user";
+const USER_KEY = "user";
 
-// Read any user we saved to localStorage last time (keeps login sticky
-// across refreshes).
 function readUserFromStorage() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
-// A thunk = an async action. Dispatching it runs the function body,
-// and Redux Toolkit auto-generates .pending / .fulfilled / .rejected
-// action types we handle in extraReducers below.
+// POST /user/login → { token, user }. bcrypt comparison happens on the server;
+// the frontend never sees or compares password hashes anymore.
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async ({ phoneNumber, password }, { rejectWithValue }) => {
-    const userData = await userApi.login(phoneNumber);
-
-    // The backend returns a plain string "User not found" instead of a
-    // proper error. Guard against that.
-    if (typeof userData === "string") {
-      return rejectWithValue(userData);
+    try {
+      const { token, user } = await userApi.login(phoneNumber, password);
+      setToken(token);
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      return user;
+    } catch (err) {
+      return rejectWithValue(err.message || "Login failed. Please try again.");
     }
-    if (userData.password !== password) {
-      return rejectWithValue("Wrong password! Please try again.");
-    }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
-    return userData;
   }
 );
 
@@ -50,12 +38,13 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: readUserFromStorage(),
-    status: "idle",   // 'idle' | 'loading' | 'succeeded' | 'failed'
+    status: "idle",
     error: null,
   },
   reducers: {
     logout(state) {
-      localStorage.removeItem(STORAGE_KEY);
+      clearToken();
+      localStorage.removeItem(USER_KEY);
       state.user = null;
       state.status = "idle";
       state.error = null;
@@ -84,9 +73,9 @@ const authSlice = createSlice({
 
 export const { logout, clearError } = authSlice.actions;
 
-// Selectors — small helpers so components don't reach into state.auth.*
-// directly. Keeps refactors easy.
+// Selectors
 export const selectUser = (s) => s.auth.user;
+export const selectRole = (s) => s.auth.user?.role || null;
 export const selectAuthStatus = (s) => s.auth.status;
 export const selectAuthError = (s) => s.auth.error;
 export const selectIsAuthed = (s) => Boolean(s.auth.user);

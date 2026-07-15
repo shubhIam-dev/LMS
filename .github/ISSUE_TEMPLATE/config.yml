@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Read the docs first
+    url: https://github.com/shubhIam-dev/LMS#readme
+    about: README, AUTH.md, DATABASE.md and flowofbackend.md explain how everything fits together.

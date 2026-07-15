@@ -21,13 +21,16 @@ let submissionSchema = new mongoose.Schema({
     },
 
     // What the student actually wrote, question by question.
+    // `awarded` is filled in when a teacher grades manually (rubric-style,
+    // per-question marks) or by the auto-grader.
     answers: [{
         questionId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Question",
             required: true
         },
-        answer: { type: String, default: "" }
+        answer:  { type: String, default: "" },
+        awarded: { type: Number, default: 0 }
     }],
 
     submittedOn: { type: Date, default: Date.now },

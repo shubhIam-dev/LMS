@@ -3,17 +3,27 @@
 
 import { NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectUser, logout } from "../store/authSlice";
+import { selectUser, selectRole, logout } from "../store/authSlice";
+
+const ROLE_LABEL = {
+  student: "Student",
+  teacher: "Teacher",
+  superadmin: "Super Admin",
+};
 
 function Sidebar() {
   const user = useSelector(selectUser);
+  const role = useSelector(selectRole);
   const dispatch = useDispatch();
 
+  const isStaff = role === "teacher" || role === "superadmin";
   const navItems = [
     { path: "/dashboard", label: "Dashboard" },
     { path: "/courses", label: "Courses" },
     { path: "/assignments", label: "Assignments" },
     { path: "/marks", label: "Marks" },
+    // Teachers and superadmins get the create/manage console.
+    ...(isStaff ? [{ path: "/manage", label: "Teacher Console" }] : []),
   ];
 
   return (
@@ -28,8 +38,8 @@ function Sidebar() {
           {user?.name?.[0]?.toUpperCase() || "?"}
         </div>
         <div className="user-info">
-          <p className="user-name">{user?.name || "Student"}</p>
-          <p className="user-role">Student</p>
+          <p className="user-name">{user?.name || "User"}</p>
+          <p className="user-role">{ROLE_LABEL[role] || "Student"}</p>
         </div>
       </div>
 

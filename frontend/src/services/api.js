@@ -1,90 +1,162 @@
-// 🌐 API Service - This is like a phonebook for the backend
-// It stores all the backend addresses and helps us call them
+// 🌐 API Service — one place for every backend call.
+// All requests automatically carry the JWT (if we have one) so the backend's
+// authenticate/authorize middleware lets them through.
 
-// The base URL where our backend server is running
-// Localhost means it's on our own computer, port 9000 is the door number
 const BASE_URL = "http://localhost:9000";
+const TOKEN_KEY = "token";
 
-// 📞 Helper function to make API calls
-// Think of this like a receptionist who handles all calls to the backend
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+export function setToken(token) {
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+}
+export function clearToken() {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
+// Central fetch wrapper: sets JSON headers, attaches the Bearer token, and
+// surfaces backend error messages.
 async function callApi(endpoint, options = {}) {
   try {
-    // Make the actual fetch request to the backend
+    const token = getToken();
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
       ...options,
     });
-    // If the server says something went wrong, show the error
+
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.msg || "Something went wrong");
+      let msg = "Something went wrong";
+      try {
+        const err = await response.json();
+        msg = err.msg || msg;
+      } catch {
+        /* non-JSON error body */
+      }
+      throw new Error(msg);
     }
-    // Convert the response to JSON format so we can use it
     return await response.json();
   } catch (error) {
-    console.error(` API Error (${endpoint}):`, error);
+    console.error(`API Error (${endpoint}):`, error);
     throw error;
   }
 }
 
-// 👤 USER API - All functions related to students
+// 👤 AUTH / USER
 export const userApi = {
-  // Log in a user by their phone number
-  // This asks the backend: "Hey, do we have a student with this phone number?"
-  login: (phoneNumber) => {
-    // We have to encode the phone number because URLs can't have special characters
-    return callApi(`/user/getUser?phoneNumber=${encodeURIComponent(phoneNumber)}`);
+  // Log in with phone + password → { token, user }
+  login: (phoneNumber, password) => {
+    return callApi("/user/login", {
+      method: "POST",
+      body: JSON.stringify({ phoneNumber, password }),
+    });
   },
 
-  // Register a new student
-  // This tells the backend: "Please add this new student to the database"
+  // Self-registration (always creates a student) → { token, user }
   register: (userData) => {
-    return callApi("/user/addUser", {
+    return callApi("/user/register", {
       method: "POST",
       body: JSON.stringify(userData),
     });
   },
-};
 
-// 📚 COURSES API - All functions related to courses
-export const courseApi = {
-  // Get ALL courses from the database
-  getAllCourses: () => {
-    return callApi("/course/getAllCourses");
-  },
+  // Re-hydrate the current user from the token on app start.
+  me: () => callApi("/user/me"),
 
-  // Get a specific course by its ID
-  getCourseById: (id) => {
-    return callApi(`/course/getCourseById`, {
-      method: "GET",
-      body: JSON.stringify({ _id: id }),
+  // Superadmin: create a teacher / superadmin / student.
+  adminCreateUser: (userData) => {
+    return callApi("/user/adminCreateUser", {
+      method: "POST",
+      body: JSON.stringify(userData),
     });
   },
+
+  // Staff: every student in the system (for enrolling into a course).
+  getStudents: () => callApi("/user/students"),
 };
 
-// 📝 ASSIGNMENTS API - All functions related to assignments
+// 📚 COURSES
+export const courseApi = {
+  getAllCourses: () => callApi("/course/getAllCourses"),
+  getCourseById: (id) => callApi(`/course/getCourseById?_id=${encodeURIComponent(id)}`),
+
+  // staff only
+  addCourse: (data) =>
+    callApi("/course/addCourse", { method: "POST", body: JSON.stringify(data) }),
+  enrollStudent: (courseId, studentId) =>
+    callApi("/course/enrollStudent", {
+      method: "POST",
+      body: JSON.stringify({ courseId, studentId }),
+    }),
+  // the roster: students enrolled in one course
+  getStudents: (courseId) =>
+    callApi(`/course/getStudents?courseId=${encodeURIComponent(courseId)}`),
+};
+
+// ❓ QUESTIONS (shared question bank — every teacher sees every question)
+export const questionApi = {
+  // filters: { q, topic, difficulty, questionType } — all optional
+  getAll: (filters = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(filters).filter(([, v]) => v)
+    ).toString();
+    return callApi(`/questions/getAllQuestions${qs ? `?${qs}` : ""}`);
+  },
+  // staff only
+  add: (data) =>
+    callApi("/questions/addQuestion", { method: "POST", body: JSON.stringify(data) }),
+};
+
+// 📝 ASSIGNMENTS
 export const assignmentApi = {
-  // Get ALL assignments
-  getAllAssignments: () => {
-    return callApi("/assignments/getAllAssignments");
-  },
+  getAllAssignments: () => callApi("/assignments/getAllAssignments"),
+  getByCourse: (courseId) =>
+    callApi(`/assignments/getByCourse?courseId=${encodeURIComponent(courseId)}`),
+
+  getAssignmentById: (id) =>
+    callApi(`/assignments/getAssignmentById?id=${encodeURIComponent(id)}`),
+
+  // staff only
+  addAssignment: (data) =>
+    callApi("/assignments/addAssignment", { method: "POST", body: JSON.stringify(data) }),
+  addQuestionsToAssignment: (assignmentId, questionIds) =>
+    callApi("/assignments/addQuestionsToAssignment", {
+      method: "POST",
+      body: JSON.stringify({ assignmentId, questionIds }),
+    }),
+  // clone another teacher's assignment into your own course
+  reuse: (assignmentId, courseId, dueOn) =>
+    callApi("/assignments/reuse", {
+      method: "POST",
+      body: JSON.stringify({ assignmentId, courseId, dueOn }),
+    }),
 };
 
-// 📊 MARKS API - All functions related to student marks/grades
-export const marksApi = {
-  // Get marks for a specific student by their ID
-  getMarksByStudent: (studentId) => {
-    return callApi(`/marks/getMarksByStudent?studentId=${encodeURIComponent(studentId)}`);
-  },
+// 📤 SUBMISSIONS & GRADING
+export const submissionApi = {
+  // student: submit answers to an assignment
+  submit: (payload) =>
+    callApi("/submissions/submit", { method: "POST", body: JSON.stringify(payload) }),
+  getByStudent: (studentId) =>
+    callApi(`/submissions/getByStudent?studentId=${encodeURIComponent(studentId)}`),
 
-  // Get ALL marks from the database
-  getAllMarks: () => {
-    return callApi("/marks/getAllMarks");
-  },
-  getMarksById : () =>{
-    
-  }
+  // staff: review + grade
+  getByAssignment: (assignmentId) =>
+    callApi(`/submissions/getByAssignment?assignmentId=${encodeURIComponent(assignmentId)}`),
+  gradeManual: (submissionId, perQuestion) =>
+    callApi("/submissions/gradeManual", {
+      method: "POST",
+      body: JSON.stringify({ submissionId, perQuestion }),
+    }),
+};
+
+// 📊 MARKS
+export const marksApi = {
+  getMarksByStudent: (studentId) =>
+    callApi(`/marks/getMarksByStudent?studentId=${encodeURIComponent(studentId)}`),
+  getAllMarks: () => callApi("/marks/getAllMarks"),
 };
