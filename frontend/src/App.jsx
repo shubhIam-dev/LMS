@@ -1,9 +1,5 @@
 // App.jsx — top-level routing + layout.
 // Auth state now comes from Redux (see src/store/authSlice.js).
-<<<<<<< HEAD
-// 🆕 Now includes Student Profile (/profile) and Faculty Profile (/faculty-profile) routes!
-=======
->>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -14,15 +10,9 @@ import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
 import Assignments from "./pages/Assignments";
 import Marks from "./pages/Marks";
-<<<<<<< HEAD
-import StudentProfile from "./pages/StudentProfile";   // 🆕 Student profile page
-import FacultyProfile from "./pages/FacultyProfile";   // 🆕 Faculty profile page
-import { selectIsAuthed, selectViewMode } from "./store/authSlice";
-=======
 import Manage from "./pages/Manage";
 import AssignmentDetail from "./pages/AssignmentDetail";
 import { selectIsAuthed } from "./store/authSlice";
->>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 import "./App.css";
 
 function Layout({ children }) {
@@ -36,39 +26,12 @@ function Layout({ children }) {
   );
 }
 
-<<<<<<< HEAD
-// 🎭 ProfileRoute — redirects to student or faculty profile based on view mode
-function ProfileRoute() {
-  const viewMode = useSelector(selectViewMode);
-  if (viewMode === "teacher") {
-    return (
-      <ProtectedRoute>
-        <FacultyProfile />
-      </ProtectedRoute>
-    );
-  }
-  return (
-    <ProtectedRoute>
-      <StudentProfile />
-    </ProtectedRoute>
-  );
-}
-
-=======
->>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 function App() {
   return (
     <Router>
       <Layout>
         <Routes>
-<<<<<<< HEAD
-          {/* 🔑 Public — Login page (anyone can see this) */}
           <Route path="/" element={<LoginPage />} />
-
-          {/* 📊 Protected — Dashboard (must be logged in) */}
-=======
-          <Route path="/" element={<LoginPage />} />
->>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
           <Route
             path="/dashboard"
             element={
@@ -77,11 +40,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-<<<<<<< HEAD
-
-          {/* 📚 Protected — Courses page */}
-=======
->>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
           <Route
             path="/courses"
             element={
@@ -90,11 +48,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-<<<<<<< HEAD
-
-          {/* 📝 Protected — Assignments page */}
-=======
->>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
           <Route
             path="/assignments"
             element={
@@ -103,11 +56,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-<<<<<<< HEAD
-
-          {/* 📈 Protected — Marks page */}
-=======
->>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
           <Route
             path="/marks"
             element={
@@ -116,26 +64,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-<<<<<<< HEAD
-
-          {/* 👤 Protected — Profile page (adapts to view mode!) */}
-          <Route
-            path="/profile"
-            element={<ProfileRoute />}
-          />
-
-          {/* 👨‍🏫 Protected — Faculty Profile page (direct access) */}
-          <Route
-            path="/faculty-profile"
-            element={
-              <ProtectedRoute>
-                <FacultyProfile />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* 🚫 Catch-all — Any unknown URL goes to login */}
-=======
           <Route
             path="/assignments/:id"
             element={
@@ -152,7 +80,6 @@ function App() {
               </ProtectedRoute>
             }
           />
->>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

@@ -12,6 +12,7 @@ let assignmentsRoutes = require('./routes/assignmentsRoutes.js');
 let marksRoutes = require('./routes/marksRoutes.js');
 let questionRoutes = require('./routes/questionRoutes.js');
 let submissionRoutes = require('./routes/submissionRoutes.js');
+let profileRoutes = require('./routes/profileRoutes.js');
 
 // Global error handlers to prevent silent crashes
 process.on('uncaughtException', (err) => {
