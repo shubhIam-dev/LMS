@@ -2,6 +2,7 @@ let express = require('express');
 let app = express();
 let mongoose = require("mongoose");
 let cors = require('cors');
+let path = require('path');
 require('dotenv').config(); // Load environment variables from .env file
 
 // Import routes

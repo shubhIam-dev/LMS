@@ -160,3 +160,39 @@ export const marksApi = {
     callApi(`/marks/getMarksByStudent?studentId=${encodeURIComponent(studentId)}`),
   getAllMarks: () => callApi("/marks/getAllMarks"),
 };
+
+export const profileApi = {
+  getProfile: () => callApi(`/api/profile?userId=${encodeURIComponent(getUserId())}`),
+  updateProfile: (data) => {
+    return callApi("/api/profile", {
+      method: "PUT",
+      body: JSON.stringify({ ...data, userId: data._id || getUserId() }),
+    });
+  },
+  changePassword: (currentPassword, newPassword) => {
+    return callApi("/api/profile/change-password", {
+      method: "PUT",
+      body: JSON.stringify({ currentPassword, newPassword, userId: getUserId() }),
+    });
+  },
+  uploadImage: async (file) => {
+    const formData = new FormData();
+    formData.append("profileImage", file);
+    formData.append("userId", getUserId());
+    const token = getToken();
+    const response = await fetch(`${BASE_URL}/api/profile/upload-image`, {
+      method: "POST",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.msg || "Failed to upload image");
+    }
+    return data;
+  },
+};
+
+export { BASE_URL };

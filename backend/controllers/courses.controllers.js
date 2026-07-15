@@ -40,7 +40,7 @@ function deleteCourse(req,res){
         .catch((err) => res.status(500).json({ msg: "Error deleting course", error: err.message }))
 }
 
-function addCourses(req,res){
+function addCourses(req, res) {
     Course.insertMany(req.body)
         .then((data) => res.status(201).json({ msg: "Added all the courses", count: data.length }))
         .catch((err) => res.status(500).json({ msg: "Error adding courses", error: err.message }))

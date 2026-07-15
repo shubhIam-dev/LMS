@@ -116,6 +116,13 @@
   line-height: 1.5;
   max-width: 300px;
 }
+.login-icon::before {
+  content: "";
+  width: 18px;
+  height: 2px;
+  background: var(--accent);
+}
+.login-icon::after { content: "College Registry · v2"; }
 
 /* Graduation-cap badge */
 .login-icon {
@@ -658,6 +665,10 @@
   padding-top: 10px;
 }
 
+.profile-role-badge.faculty {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
 
 /* ============================================================
    ASSIGNMENTS
