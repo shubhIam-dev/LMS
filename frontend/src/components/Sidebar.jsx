@@ -1,5 +1,6 @@
 // Sidebar — navigation for logged-in pages.
 // Reads the current user from Redux and dispatches logout().
+<<<<<<< HEAD
 // 🆕 Now shows "My Profile" link — takes you to student or faculty profile
 //    based on your role!
 // 🎭 Teachers can switch between "Student View" and "Teacher View" via dropdown!
@@ -17,11 +18,31 @@ function Sidebar() {
   const profilePath = viewMode === "teacher" ? "/faculty-profile" : "/profile";
 
   // Navigation items — same for both views, only the profile link adapts
+=======
+
+import { NavLink } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { selectUser, selectRole, logout } from "../store/authSlice";
+
+const ROLE_LABEL = {
+  student: "Student",
+  teacher: "Teacher",
+  superadmin: "Super Admin",
+};
+
+function Sidebar() {
+  const user = useSelector(selectUser);
+  const role = useSelector(selectRole);
+  const dispatch = useDispatch();
+
+  const isStaff = role === "teacher" || role === "superadmin";
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
   const navItems = [
     { path: "/dashboard", label: "Dashboard" },
     { path: "/courses", label: "Courses" },
     { path: "/assignments", label: "Assignments" },
     { path: "/marks", label: "Marks" },
+<<<<<<< HEAD
     { path: profilePath, label: "My Profile" },
   ];
 
@@ -32,6 +53,11 @@ function Sidebar() {
 
   // Is this user a teacher (can they switch views)?
   const isTeacher = user?.role === "teacher";
+=======
+    // Teachers and superadmins get the create/manage console.
+    ...(isStaff ? [{ path: "/manage", label: "Teacher Console" }] : []),
+  ];
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
 
   return (
     <aside className="sidebar">
@@ -45,6 +71,7 @@ function Sidebar() {
           {user?.name?.[0]?.toUpperCase() || "?"}
         </div>
         <div className="user-info">
+<<<<<<< HEAD
           <p className="user-name">{user?.name || "Student"}</p>
           <p className="user-role">
             {viewMode === "teacher" ? "Faculty" : "Student"}
@@ -67,6 +94,13 @@ function Sidebar() {
         </div>
       )}
 
+=======
+          <p className="user-name">{user?.name || "User"}</p>
+          <p className="user-role">{ROLE_LABEL[role] || "Student"}</p>
+        </div>
+      </div>
+
+>>>>>>> 2a077479d9cc37ead158c2916d9e354f075a9232
       <nav className="sidebar-nav">
         {navItems.map((item) => (
           <NavLink

@@ -34,6 +34,14 @@ let questionSchema = new mongoose.Schema({
         type: String,
         enum: ["easy", "medium", "hard"],
         default: "medium"
+    },
+
+    // Which teacher wrote this question. The bank is SHARED — every teacher
+    // sees every question and can reuse it; createdBy is attribution, not
+    // ownership.
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     }
 }, { timestamps: true });
 

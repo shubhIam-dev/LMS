@@ -12,10 +12,6 @@ let assignmentsRoutes = require('./routes/assignmentsRoutes.js');
 let marksRoutes = require('./routes/marksRoutes.js');
 let questionRoutes = require('./routes/questionRoutes.js');
 let submissionRoutes = require('./routes/submissionRoutes.js');
-let profileRoutes = require('./routes/profileRoutes.js');
-
-// 📸 Serve uploaded files statically so the frontend can access profile images
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Global error handlers to prevent silent crashes
 process.on('uncaughtException', (err) => {
