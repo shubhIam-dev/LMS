@@ -1,5 +1,6 @@
 // Sidebar — navigation for logged-in pages.
 // Reads the current user from Redux and dispatches logout().
+// Links dynamically adapt based on user role.
 
 import { NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -17,11 +18,15 @@ function Sidebar() {
   const dispatch = useDispatch();
 
   const isStaff = role === "teacher" || role === "superadmin";
+  const dashboardPath = isStaff ? "/dashboard/faculty" : "/dashboard/student";
+  const profilePath = isStaff ? "/profile/faculty" : "/profile/student";
+
   const navItems = [
-    { path: "/dashboard", label: "Dashboard" },
+    { path: dashboardPath, label: "Dashboard" },
     { path: "/courses", label: "Courses" },
     { path: "/assignments", label: "Assignments" },
     { path: "/marks", label: "Marks" },
+    { path: profilePath, label: "Profile" },
     // Teachers and superadmins get the create/manage console.
     ...(isStaff ? [{ path: "/manage", label: "Teacher Console" }] : []),
   ];

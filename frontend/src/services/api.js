@@ -1,9 +1,13 @@
-// 🌐 API Service — one place for every backend call.
-// All requests automatically carry the JWT (if we have one) so the backend's
-// authenticate/authorize middleware lets them through.
+// 🌐 API Service — Axios-based central API layer.
+// Every request automatically carries the JWT token. API error handling is unified.
+// Components must NEVER call axios directly. Use the exported functions below.
+
+import axios from "axios";
 
 const BASE_URL = "http://localhost:9000";
 const TOKEN_KEY = "token";
+
+// ── Token helpers ───────────────────────────────────────────────────────────
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
@@ -15,184 +19,220 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-// Central fetch wrapper: sets JSON headers, attaches the Bearer token, and
-// surfaces backend error messages.
-async function callApi(endpoint, options = {}) {
+function getUserId() {
   try {
-    const token = getToken();
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...options.headers,
-      },
-      ...options,
-    });
-
-    if (!response.ok) {
-      let msg = "Something went wrong";
-      try {
-        const err = await response.json();
-        msg = err.msg || msg;
-      } catch {
-        /* non-JSON error body */
-      }
-      throw new Error(msg);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`API Error (${endpoint}):`, error);
-    throw error;
+    const u = localStorage.getItem("user");
+    return u ? JSON.parse(u)._id || JSON.parse(u).id : "";
+  } catch {
+    return "";
   }
 }
 
-// 👤 AUTH / USER
+// ── Axios instance ──────────────────────────────────────────────────────────
+
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: { "Content-Type": "application/json" },
+});
+
+// Request interceptor: attach JWT token automatically.
+// Skips public auth endpoints (login, register) — no token needed there.
+api.interceptors.request.use((config) => {
+  // Public auth endpoints should not carry Authorization headers
+  if (config.url?.includes("/user/login") || config.url?.includes("/user/register")) {
+    return config;
+  }
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor: extract data, unify error messages
+api.interceptors.response.use(
+  (res) => res.data,
+  (error) => {
+    let message = "Something went wrong";
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      // Keep the backend's specific error message if available;
+      // only fall back to generic messages when the backend gives none.
+      const backendMsg = data?.msg || data?.message;
+      if (backendMsg) {
+        message = backendMsg;
+      } else if (status === 401) {
+        message = "Session expired. Please log in again.";
+      } else if (status === 403) {
+        message = "You don't have permission to do that.";
+      } else if (status === 404) {
+        message = "The requested resource was not found.";
+      } else if (status === 500) {
+        message = "Server error. Please try again later.";
+      }
+    } else if (error.request) {
+      message = "No response from server. Check your connection.";
+    } else {
+      message = error.message || message;
+    }
+    console.error(`API Error (${error.config?.url || "unknown"}):`, message);
+    return Promise.reject(new Error(message));
+  }
+);
+
+// ── Helper: get user ID from localStorage for profile calls ────────────────
+
+// ── AUTH / USER ────────────────────────────────────────────────────────────
+
 export const userApi = {
-  // Log in with phone + password → { token, user }
-  login: (phoneNumber, password) => {
-    return callApi("/user/login", {
-      method: "POST",
-      body: JSON.stringify({ phoneNumber, password }),
-    });
-  },
+  /** POST /user/login → { token, user } */
+  login: (phoneNumber, password) =>
+    api.post("/user/login", { phoneNumber, password }),
 
-  // Self-registration (always creates a student) → { token, user }
-  register: (userData) => {
-    return callApi("/user/register", {
-      method: "POST",
-      body: JSON.stringify(userData),
-    });
-  },
+  /** POST /user/register → { token, user } */
+  register: (userData) => api.post("/user/register", userData),
 
-  // Re-hydrate the current user from the token on app start.
-  me: () => callApi("/user/me"),
+  /** GET /user/me → { user } — re-hydrate session from token */
+  me: () => api.get("/user/me"),
 
-  // Superadmin: create a teacher / superadmin / student.
-  adminCreateUser: (userData) => {
-    return callApi("/user/adminCreateUser", {
-      method: "POST",
-      body: JSON.stringify(userData),
-    });
-  },
+  /** POST /user/adminCreateUser — superadmin only */
+  adminCreateUser: (userData) => api.post("/user/adminCreateUser", userData),
 
-  // Staff: every student in the system (for enrolling into a course).
-  getStudents: () => callApi("/user/students"),
+  /** GET /user/students — staff only: list all students */
+  getStudents: () => api.get("/user/students"),
 };
 
-// 📚 COURSES
-export const courseApi = {
-  getAllCourses: () => callApi("/course/getAllCourses"),
-  getCourseById: (id) => callApi(`/course/getCourseById?_id=${encodeURIComponent(id)}`),
-
-  // staff only
-  addCourse: (data) =>
-    callApi("/course/addCourse", { method: "POST", body: JSON.stringify(data) }),
-  enrollStudent: (courseId, studentId) =>
-    callApi("/course/enrollStudent", {
-      method: "POST",
-      body: JSON.stringify({ courseId, studentId }),
-    }),
-  // the roster: students enrolled in one course
-  getStudents: (courseId) =>
-    callApi(`/course/getStudents?courseId=${encodeURIComponent(courseId)}`),
-};
-
-// ❓ QUESTIONS (shared question bank — every teacher sees every question)
-export const questionApi = {
-  // filters: { q, topic, difficulty, questionType } — all optional
-  getAll: (filters = {}) => {
-    const qs = new URLSearchParams(
-      Object.entries(filters).filter(([, v]) => v)
-    ).toString();
-    return callApi(`/questions/getAllQuestions${qs ? `?${qs}` : ""}`);
-  },
-  // staff only
-  add: (data) =>
-    callApi("/questions/addQuestion", { method: "POST", body: JSON.stringify(data) }),
-};
-
-// 📝 ASSIGNMENTS
-export const assignmentApi = {
-  getAllAssignments: () => callApi("/assignments/getAllAssignments"),
-  getByCourse: (courseId) =>
-    callApi(`/assignments/getByCourse?courseId=${encodeURIComponent(courseId)}`),
-
-  getAssignmentById: (id) =>
-    callApi(`/assignments/getAssignmentById?id=${encodeURIComponent(id)}`),
-
-  // staff only
-  addAssignment: (data) =>
-    callApi("/assignments/addAssignment", { method: "POST", body: JSON.stringify(data) }),
-  addQuestionsToAssignment: (assignmentId, questionIds) =>
-    callApi("/assignments/addQuestionsToAssignment", {
-      method: "POST",
-      body: JSON.stringify({ assignmentId, questionIds }),
-    }),
-  // clone another teacher's assignment into your own course
-  reuse: (assignmentId, courseId, dueOn) =>
-    callApi("/assignments/reuse", {
-      method: "POST",
-      body: JSON.stringify({ assignmentId, courseId, dueOn }),
-    }),
-};
-
-// 📤 SUBMISSIONS & GRADING
-export const submissionApi = {
-  // student: submit answers to an assignment
-  submit: (payload) =>
-    callApi("/submissions/submit", { method: "POST", body: JSON.stringify(payload) }),
-  getByStudent: (studentId) =>
-    callApi(`/submissions/getByStudent?studentId=${encodeURIComponent(studentId)}`),
-
-  // staff: review + grade
-  getByAssignment: (assignmentId) =>
-    callApi(`/submissions/getByAssignment?assignmentId=${encodeURIComponent(assignmentId)}`),
-  gradeManual: (submissionId, perQuestion) =>
-    callApi("/submissions/gradeManual", {
-      method: "POST",
-      body: JSON.stringify({ submissionId, perQuestion }),
-    }),
-};
-
-// 📊 MARKS
-export const marksApi = {
-  getMarksByStudent: (studentId) =>
-    callApi(`/marks/getMarksByStudent?studentId=${encodeURIComponent(studentId)}`),
-  getAllMarks: () => callApi("/marks/getAllMarks"),
-};
+// ── PROFILE ────────────────────────────────────────────────────────────────
 
 export const profileApi = {
-  getProfile: () => callApi(`/api/profile?userId=${encodeURIComponent(getUserId())}`),
-  updateProfile: (data) => {
-    return callApi("/api/profile", {
-      method: "PUT",
-      body: JSON.stringify({ ...data, userId: data._id || getUserId() }),
-    });
-  },
-  changePassword: (currentPassword, newPassword) => {
-    return callApi("/api/profile/change-password", {
-      method: "PUT",
-      body: JSON.stringify({ currentPassword, newPassword, userId: getUserId() }),
-    });
-  },
+  /** GET /api/profile?userId=X → full profile object */
+  /** Pass optional userId to view another user's profile (faculty viewing student) */
+  getProfile: (userId) => api.get(`/api/profile?userId=${encodeURIComponent(userId || getUserId())}`),
+
+  /** PUT /api/profile → { msg, user } */
+  updateProfile: (data) =>
+    api.put("/api/profile", { ...data, userId: data._id || getUserId() }),
+
+  /** PUT /api/profile/change-password → { msg } */
+  changePassword: (currentPassword, newPassword) =>
+    api.put("/api/profile/change-password", {
+      currentPassword,
+      newPassword,
+      userId: getUserId(),
+    }),
+
+  /** POST /api/profile/upload-image → { msg, imageUrl } */
   uploadImage: async (file) => {
     const formData = new FormData();
     formData.append("profileImage", file);
     formData.append("userId", getUserId());
     const token = getToken();
-    const response = await fetch(`${BASE_URL}/api/profile/upload-image`, {
-      method: "POST",
+    const response = await axios.post(`${BASE_URL}/api/profile/upload-image`, formData, {
       headers: {
+        "Content-Type": "multipart/form-data",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: formData,
     });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.msg || "Failed to upload image");
-    }
-    return data;
+    return response.data;
   },
 };
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+
+export const dashboardApi = {
+  /** GET /dashboard/student → aggregated student dashboard data */
+  /** Supports ?studentId=xxx for faculty viewing a specific student */
+  getStudentDashboard: (studentId) => {
+    const params = studentId ? `?studentId=${encodeURIComponent(studentId)}` : "";
+    return api.get(`/dashboard/student${params}`);
+  },
+
+  /** GET /dashboard/faculty → aggregated faculty dashboard data */
+  getFacultyDashboard: () => api.get("/dashboard/faculty"),
+
+  /** GET /faculty/students → students assigned to this faculty */
+  getFacultyStudents: () => api.get("/faculty/students"),
+};
+
+// ── COURSES ────────────────────────────────────────────────────────────────
+
+export const courseApi = {
+  getAllCourses: () => api.get("/course/getAllCourses"),
+  getCourseById: (id) => api.get(`/course/getCourseById?_id=${encodeURIComponent(id)}`),
+  addCourse: (data) => api.post("/course/addCourse", data),
+  enrollStudent: (courseId, studentId) =>
+    api.post("/course/enrollStudent", { courseId, studentId }),
+  getStudents: (courseId) =>
+    api.get(`/course/getStudents?courseId=${encodeURIComponent(courseId)}`),
+};
+
+// ── ASSIGNMENTS ────────────────────────────────────────────────────────────
+
+export const assignmentApi = {
+  getAllAssignments: () => api.get("/assignments/getAllAssignments"),
+  getByCourse: (courseId) =>
+    api.get(`/assignments/getByCourse?courseId=${encodeURIComponent(courseId)}`),
+  getAssignmentById: (id) =>
+    api.get(`/assignments/getAssignmentById?id=${encodeURIComponent(id)}`),
+  addAssignment: (data) => api.post("/assignments/addAssignment", data),
+  addQuestionsToAssignment: (assignmentId, questionIds) =>
+    api.post("/assignments/addQuestionsToAssignment", { assignmentId, questionIds }),
+  reuse: (assignmentId, courseId, dueOn) =>
+    api.post("/assignments/reuse", { assignmentId, courseId, dueOn }),
+};
+
+// ── MARKS ──────────────────────────────────────────────────────────────────
+
+export const marksApi = {
+  getMarksByStudent: (studentId) =>
+    api.get(`/marks/getMarksByStudent?studentId=${encodeURIComponent(studentId)}`),
+  getAllMarks: () => api.get("/marks/getAllMarks"),
+};
+
+// ── SUBMISSIONS ────────────────────────────────────────────────────────────
+
+export const submissionApi = {
+  submit: (payload) => api.post("/submissions/submit", payload),
+  getByStudent: (studentId) =>
+    api.get(`/submissions/getByStudent?studentId=${encodeURIComponent(studentId)}`),
+  getByAssignment: (assignmentId) =>
+    api.get(`/submissions/getByAssignment?assignmentId=${encodeURIComponent(assignmentId)}`),
+  gradeManual: (submissionId, perQuestion) =>
+    api.post("/submissions/gradeManual", { submissionId, perQuestion }),
+};
+
+// ── QUESTIONS ──────────────────────────────────────────────────────────────
+
+export const questionApi = {
+  getAll: (filters = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(filters).filter(([, v]) => v)
+    ).toString();
+    return api.get(`/questions/getAllQuestions${qs ? `?${qs}` : ""}`);
+  },
+  add: (data) => api.post("/questions/addQuestion", data),
+};
+
+// ── Named convenience exports (for the user's requested function names) ──
+
+export const getStudentProfile = () => profileApi.getProfile();
+export const getStudentProfileById = (studentId) => profileApi.getProfile(studentId);
+export const getFacultyProfile = () => profileApi.getProfile();
+export const updateStudentProfile = (data) => profileApi.updateProfile(data);
+export const updateFacultyProfile = (data) => profileApi.updateProfile(data);
+export const getCourses = () => courseApi.getAllCourses();
+export const getAssignments = () => assignmentApi.getAllAssignments();
+export const getStudentDashboard = () => dashboardApi.getStudentDashboard();
+export const getFacultyDashboard = () => dashboardApi.getFacultyDashboard();
+export const getMarks = () => marksApi.getAllMarks();
+export const getScores = () => marksApi.getAllMarks();
+
+// ── Stub endpoints (backend not yet implemented — will return 404 gracefully) ──
+
+export const getAttendance = () => api.get("/attendance");
+export const getNotifications = () => api.get("/notifications");
+
+// ── EXPORTS for other modules ──────────────────────────────────────────────
 
 export { BASE_URL };

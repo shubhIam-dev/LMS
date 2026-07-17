@@ -1,14 +1,5 @@
 let express = require("express");
 let { addQuestion, addQuestions, getAllQuestions, getQuestionById, deleteQuestion } = require("../controllers/questionController.js");
-
-const router = express.Router();
-
-router.post("/addQuestion", addQuestion);
-router.post("/addQuestions", addQuestions);
-router.get("/getAllQuestions", getAllQuestions);
-router.get("/getQuestionById", getQuestionById);
-router.post("/deleteQuestion", deleteQuestion);
-
 let { authenticate, authorize } = require("../middleware/auth");
 
 const router = express.Router();
@@ -22,6 +13,5 @@ const staff = [authenticate, authorize("teacher", "superadmin")];
 router.post("/addQuestion", staff, addQuestion);
 router.post("/addQuestions", staff, addQuestions);
 router.post("/deleteQuestion", staff, deleteQuestion);
-
 
 module.exports = router;
