@@ -4,7 +4,7 @@
 //   <ProtectedRoute roles={["teacher","superadmin"]}><TeacherPage/></ProtectedRoute>
 //
 // Not logged in  → redirect to the login page.
-// Wrong role     → redirect to the dashboard (they're authed, just not allowed).
+// Wrong role     → redirect to the correct role-based dashboard.
 
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -16,7 +16,10 @@ function ProtectedRoute({ children, roles }) {
 
   if (!isAuthed) return <Navigate to="/" replace />;
   if (roles && roles.length && !roles.includes(role)) {
-    return <Navigate to="/dashboard" replace />;
+    // Redirect to appropriate dashboard based on actual role
+    if (role === "student") return <Navigate to="/dashboard/student" replace />;
+    if (role === "teacher" || role === "superadmin") return <Navigate to="/dashboard/faculty" replace />;
+    return <Navigate to="/dashboard/student" replace />;
   }
   return children;
 }

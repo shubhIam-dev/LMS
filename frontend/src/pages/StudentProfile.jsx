@@ -20,6 +20,7 @@ import { profileApi, BASE_URL } from "../services/api";
 import { updateUser } from "../store/authSlice";
 import SKILLS_LIST from "../data/skillsList";
 import FIELD_OF_STUDY_LIST from "../data/fieldOfStudyList";
+import "./StudentProfile.css";
 
 // Helper component for displaying/editing a single social link field
 function SocialLinkInput({ label, name, value, isEditing, onChange, placeholder }) {
@@ -582,7 +583,7 @@ function StudentProfile() {
   // ============================================================
   if (loading) {
     return (
-      <div className="page-content">
+      <div className="page-content profile-page">
         <div className="loading-spinner">
           <div className="spinner-dot"></div>
           <span>Loading your profile...</span>
@@ -596,7 +597,7 @@ function StudentProfile() {
   // ============================================================
   if (!profile) {
     return (
-      <div className="page-content">
+      <div className="page-content profile-page">
         <div className="empty-state">
           <div className="empty-icon"></div>
           <h3>Profile Not Found</h3>

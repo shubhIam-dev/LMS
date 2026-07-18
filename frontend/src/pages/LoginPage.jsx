@@ -1,14 +1,17 @@
 // LoginPage — the sign-in form.
 // Dispatches loginUser() (an async thunk) and reads status/error from Redux.
+// On success, redirects to the correct dashboard based on user role.
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   loginUser,
+  logout,
   selectAuthError,
   selectAuthStatus,
   selectIsAuthed,
+  selectRole,
   clearError,
 } from "../store/authSlice";
 
@@ -21,12 +24,23 @@ function LoginPage() {
   const status = useSelector(selectAuthStatus);
   const error = useSelector(selectAuthError);
   const isAuthed = useSelector(selectIsAuthed);
+  const role = useSelector(selectRole);
   const isLoading = status === "loading";
 
-  // If already logged in (page refresh with saved session), bounce to dashboard.
+  // Only redirect when we have a CONFIRMED successful login (status === "succeeded").
+  // Without this check, stale user data from localStorage would trigger an immediate
+  // redirect with an old/invalid token, causing "Session expired" on the dashboard.
   useEffect(() => {
-    if (isAuthed) navigate("/dashboard", { replace: true });
-  }, [isAuthed, navigate]);
+    if (!isAuthed) return;
+    if (status !== "succeeded") return; // ← KEY FIX: ignore stale "idle" state from localStorage
+    if (role === "student") {
+      navigate("/dashboard/student", { replace: true });
+    } else if (role === "teacher" || role === "superadmin") {
+      navigate("/dashboard/faculty", { replace: true });
+    } else {
+      navigate("/dashboard/student", { replace: true });
+    }
+  }, [isAuthed, role, navigate, status]);
 
   // Clear stale error when the user starts typing again.
   useEffect(() => {
@@ -38,9 +52,23 @@ function LoginPage() {
     e.preventDefault();
     if (!phoneNumber || !password) return;
 
+    // Clear stale auth state before attempting a fresh login.
+    // This prevents old/invalid tokens from being sent on subsequent API calls
+    // and ensures the Redux store starts from a clean state.
+    dispatch(logout());
+
     const result = await dispatch(loginUser({ phoneNumber, password }));
     if (loginUser.fulfilled.match(result)) {
-      navigate("/dashboard");
+      // Redirect based on role — the useEffect above will handle this
+      // once status changes to "succeeded"
+      const userRole = result.payload?.role;
+      if (userRole === "student") {
+        navigate("/dashboard/student", { replace: true });
+      } else if (userRole === "teacher" || userRole === "superadmin") {
+        navigate("/dashboard/faculty", { replace: true });
+      } else {
+        navigate("/dashboard/student", { replace: true });
+      }
     }
   }
 
@@ -86,7 +114,7 @@ function LoginPage() {
         </form>
 
         <p className="login-footer">
-          Don't have an account? Contact your college administration.
+          Don&apos;t have an account? Contact your college administration.
         </p>
       </div>
     </div>
