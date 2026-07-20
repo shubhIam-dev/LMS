@@ -161,10 +161,17 @@ export const courseApi = {
   getAllCourses: () => api.get("/course/getAllCourses"),
   getCourseById: (id) => api.get(`/course/getCourseById?_id=${encodeURIComponent(id)}`),
   addCourse: (data) => api.post("/course/addCourse", data),
+  updateCourse: (data) => api.post("/course/updateCourseById", data),
+  deleteCourse: (id) => api.post("/course/deleteCourse", { _id: id }),
   enrollStudent: (courseId, studentId) =>
     api.post("/course/enrollStudent", { courseId, studentId }),
   getStudents: (courseId) =>
     api.get(`/course/getStudents?courseId=${encodeURIComponent(courseId)}`),
+  /** POST /course/selfEnroll — student enrolls themselves */
+  selfEnroll: (courseId) => api.post("/course/selfEnroll", { courseId }),
+  /** GET /course/progress?courseId=X&studentId=Y */
+  getProgress: (courseId, studentId) =>
+    api.get(`/course/progress?courseId=${encodeURIComponent(courseId)}&studentId=${encodeURIComponent(studentId)}`),
 };
 
 // ── ASSIGNMENTS ────────────────────────────────────────────────────────────
@@ -180,6 +187,10 @@ export const assignmentApi = {
     api.post("/assignments/addQuestionsToAssignment", { assignmentId, questionIds }),
   reuse: (assignmentId, courseId, dueOn) =>
     api.post("/assignments/reuse", { assignmentId, courseId, dueOn }),
+  /** PUT /assignments/updateAssignmentById — used to replace questions array, etc. */
+  updateAssignment: (data) => api.put("/assignments/updateAssignmentById", data),
+  /** POST /assignments/deleteAssignment */
+  deleteAssignment: (data) => api.post("/assignments/deleteAssignment", data),
 };
 
 // ── MARKS ──────────────────────────────────────────────────────────────────
@@ -212,6 +223,32 @@ export const questionApi = {
     return api.get(`/questions/getAllQuestions${qs ? `?${qs}` : ""}`);
   },
   add: (data) => api.post("/questions/addQuestion", data),
+  update: (id, data) => api.put("/questions/updateQuestionById", { id, ...data }),
+  delete: (id) => api.post("/questions/deleteQuestion", { id }),
+};
+
+// ── NOTES ──────────────────────────────────────────────────────────────
+
+export const notesApi = {
+  /** GET /notes/getByCourse?courseId=X */
+  getByCourse: (courseId) =>
+    api.get(`/notes/getByCourse?courseId=${encodeURIComponent(courseId)}`),
+  /** POST /notes/addNote */
+  add: (data) => api.post("/notes/addNote", data),
+  /** POST /notes/deleteNote */
+  delete: (id) => api.post("/notes/deleteNote", { id }),
+};
+
+// ── ANNOUNCEMENTS ────────────────────────────────────────────────────────
+
+export const announcementApi = {
+  /** GET /announcements/getByCourse?courseId=X */
+  getByCourse: (courseId) =>
+    api.get(`/announcements/getByCourse?courseId=${encodeURIComponent(courseId)}`),
+  /** POST /announcements/addAnnouncement */
+  add: (data) => api.post("/announcements/addAnnouncement", data),
+  /** POST /announcements/deleteAnnouncement */
+  delete: (id) => api.post("/announcements/deleteAnnouncement", { id }),
 };
 
 // ── Named convenience exports (for the user's requested function names) ──

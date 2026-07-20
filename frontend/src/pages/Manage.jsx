@@ -75,20 +75,37 @@ function Field({ label, children }) {
 function CoursesTab() {
   const [courses, setCourses] = useState([]);
   const [form, setForm] = useState({ CourseName: "", CourseCode: "", credits: 3, semester: "" });
+  const [editingId, setEditingId] = useState(null);  // non-null = we're editing that course
   const [busy, setBusy] = useState(false);
   const [flash, show] = useFlash();
 
   const load = () => courseApi.getAllCourses().then(setCourses).catch(() => {});
   useEffect(() => { load(); }, []);
 
+  function startEdit(c) {
+    setEditingId(c._id);
+    setForm({ CourseName: c.CourseName, CourseCode: c.CourseCode, credits: c.credits || 3, semester: c.semester || "" });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm({ CourseName: "", CourseCode: "", credits: 3, semester: "" });
+  }
+
   async function submit(e) {
     e.preventDefault();
     if (!form.CourseName || !form.CourseCode) return show(false, "Name and code are required.");
     setBusy(true);
     try {
-      await courseApi.addCourse({ ...form, credits: Number(form.credits) });
-      show(true, `Created "${form.CourseName}".`);
-      setForm({ CourseName: "", CourseCode: "", credits: 3, semester: "" });
+      if (editingId) {
+        await courseApi.updateCourse({ _id: editingId, ...form, credits: Number(form.credits) });
+        show(true, `Updated "${form.CourseName}".`);
+        cancelEdit();
+      } else {
+        await courseApi.addCourse({ ...form, credits: Number(form.credits) });
+        show(true, `Created "${form.CourseName}".`);
+        setForm({ CourseName: "", CourseCode: "", credits: 3, semester: "" });
+      }
       load();
     } catch (err) {
       show(false, err.message);
@@ -97,10 +114,21 @@ function CoursesTab() {
     }
   }
 
+  async function deleteCourse(id) {
+    if (!window.confirm("Delete this course? This cannot be undone.")) return;
+    try {
+      await courseApi.deleteCourse(id);
+      show(true, "Course deleted.");
+      load();
+    } catch (err) {
+      show(false, err.message);
+    }
+  }
+
   return (
     <div className="console-grid">
       <form className="console-card" onSubmit={submit}>
-        <h3>New course</h3>
+        <h3>{editingId ? "Edit course" : "New course"}</h3>
         <Field label="Course name">
           <input value={form.CourseName} onChange={(e) => setForm({ ...form, CourseName: e.target.value })} placeholder="Data Structures & Algorithms" />
         </Field>
@@ -115,7 +143,10 @@ function CoursesTab() {
             <input value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })} placeholder="Fall 2026" />
           </Field>
         </div>
-        <button className="console-btn" disabled={busy}>{busy ? "Creating…" : "Create course"}</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="console-btn" disabled={busy}>{busy ? "Saving…" : editingId ? "Save changes" : "Create course"}</button>
+          {editingId && <button type="button" className="mini-btn" onClick={cancelEdit}>Cancel</button>}
+        </div>
         {flash && <p className={`console-flash ${flash.ok ? "ok" : "err"}`}>{flash.msg}</p>}
       </form>
 
@@ -123,7 +154,14 @@ function CoursesTab() {
         <h3>Existing courses <span className="count-pill">{courses.length}</span></h3>
         <ul className="console-list">
           {courses.map((c) => (
-            <li key={c._id}><strong>{c.CourseName}</strong><span>{c.CourseCode}</span></li>
+            <li key={c._id}>
+              <strong>{c.CourseName}</strong>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ marginRight: 8 }}>{c.CourseCode}</span>
+                <button type="button" className="mini-btn" onClick={() => startEdit(c)} title="Edit">✏️</button>
+                <button type="button" className="mini-btn" style={{ color: "var(--danger, #DC2626)" }} onClick={() => deleteCourse(c._id)} title="Delete">🗑️</button>
+              </div>
+            </li>
           ))}
           {courses.length === 0 && <li className="muted">No courses yet.</li>}
         </ul>
@@ -137,6 +175,7 @@ function QuestionsTab() {
   const [questions, setQuestions] = useState([]);
   const [filters, setFilters] = useState({ q: "", topic: "", difficulty: "", questionType: "" });
   const [form, setForm] = useState({ text: "", questionType: "short", correctAnswer: "", marks: 1, topic: "", difficulty: "medium" });
+  const [editingId, setEditingId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [flash, show] = useFlash();
 
@@ -146,14 +185,30 @@ function QuestionsTab() {
   }, [filters]);
   useEffect(() => { load(); }, [load]);
 
+  function startEdit(q) {
+    setEditingId(q._id);
+    setForm({ text: q.text, questionType: q.questionType, correctAnswer: q.correctAnswer || "", marks: q.marks, topic: q.topic || "", difficulty: q.difficulty || "medium" });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm({ text: "", questionType: "short", correctAnswer: "", marks: 1, topic: "", difficulty: "medium" });
+  }
+
   async function submit(e) {
     e.preventDefault();
     if (!form.text) return show(false, "Question text is required.");
     setBusy(true);
     try {
-      await questionApi.add({ ...form, marks: Number(form.marks) });
-      show(true, "Question added to the shared bank.");
-      setForm({ text: "", questionType: "short", correctAnswer: "", marks: 1, topic: "", difficulty: "medium" });
+      if (editingId) {
+        await questionApi.update(editingId, { ...form, marks: Number(form.marks) });
+        show(true, "Question updated.");
+        cancelEdit();
+      } else {
+        await questionApi.add({ ...form, marks: Number(form.marks) });
+        show(true, "Question added to the shared bank.");
+        setForm({ text: "", questionType: "short", correctAnswer: "", marks: 1, topic: "", difficulty: "medium" });
+      }
       load();
     } catch (err) {
       show(false, err.message);
@@ -162,10 +217,21 @@ function QuestionsTab() {
     }
   }
 
+  async function deleteQuestion(id) {
+    if (!window.confirm("Delete this question from the shared bank?")) return;
+    try {
+      await questionApi.delete(id);
+      show(true, "Question deleted.");
+      load();
+    } catch (err) {
+      show(false, err.message);
+    }
+  }
+
   return (
     <div className="console-grid">
       <form className="console-card" onSubmit={submit}>
-        <h3>New question</h3>
+        <h3>{editingId ? "Edit question" : "New question"}</h3>
         <Field label="Question">
           <textarea rows="3" value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} placeholder="What is the time complexity of binary search?" />
         </Field>
@@ -198,7 +264,10 @@ function QuestionsTab() {
             <option value="hard">Hard</option>
           </select>
         </Field>
-        <button className="console-btn" disabled={busy}>{busy ? "Adding…" : "Add question"}</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="console-btn" disabled={busy}>{busy ? "Saving…" : editingId ? "Save changes" : "Add question"}</button>
+          {editingId && <button type="button" className="mini-btn" onClick={cancelEdit}>Cancel</button>}
+        </div>
         {flash && <p className={`console-flash ${flash.ok ? "ok" : "err"}`}>{flash.msg}</p>}
       </form>
 
@@ -246,7 +315,11 @@ function QuestionsTab() {
                   {q.createdBy?.name && <span className="mini-tag author">by {q.createdBy.name}</span>}
                 </div>
               </div>
-              <span>{q.marks}m</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ marginRight: 8 }}>{q.marks}m</span>
+                <button type="button" className="mini-btn" onClick={() => startEdit(q)} title="Edit">✏️</button>
+                <button type="button" className="mini-btn" style={{ color: "var(--danger, #DC2626)" }} onClick={() => deleteQuestion(q._id)} title="Delete">🗑️</button>
+              </div>
             </li>
           ))}
           {questions.length === 0 && <li className="muted">No questions match these filters.</li>}
@@ -301,6 +374,17 @@ function AssignmentsTab() {
     try {
       const res = await assignmentApi.reuse(assignmentId, reuseCourse);
       show(true, `Reused "${res.assignment.assignmentName}" into your course.`);
+      loadAssignments();
+    } catch (err) {
+      show(false, err.message);
+    }
+  }
+
+  async function deleteAssignment(id) {
+    if (!window.confirm("Delete this assignment? This cannot be undone.")) return;
+    try {
+      await assignmentApi.deleteAssignment({ id });
+      show(true, "Assignment deleted.");
       loadAssignments();
     } catch (err) {
       show(false, err.message);
@@ -373,7 +457,10 @@ function AssignmentsTab() {
                   <span className="mini-tag">{a.questions?.length || 0} Qs · {a.totalMarks || 0}m</span>
                 </div>
               </div>
-              <button type="button" className="mini-btn" onClick={() => reuse(a._id)}>Reuse</button>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <button type="button" className="mini-btn" onClick={() => reuse(a._id)}>Reuse</button>
+                <button type="button" className="mini-btn" style={{ color: "var(--danger, #DC2626)" }} onClick={() => deleteAssignment(a._id)} title="Delete">🗑️</button>
+              </div>
             </li>
           ))}
         </ul>

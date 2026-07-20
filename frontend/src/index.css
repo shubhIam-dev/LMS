@@ -81,6 +81,26 @@
 
   /* ---- Layout ---- */
   --sidebar-width: 268px;
+
+  /* ---- Compatibility aliases ----
+     App.css references these shorter names throughout (login page, sidebar,
+     cards, tables, empty states, etc). They were never defined, so every
+     card background, radius, border, and button color that used them was
+     silently falling back to "transparent" / "0" / "currentcolor" — this
+     is why buttons had square corners, cards blended into the page, and
+     hover states looked broken. Mapped onto the real token ramp above. */
+  --primary:      var(--primary-600);
+  --primary-2:    var(--primary-700);
+  --accent:       var(--amber-500);
+  --accent-soft:  var(--amber-soft);
+  --radius:       var(--r);
+  --card:         var(--surface);
+  --paper:        var(--surface-2);
+  --paper-2:      #F0F1F8;
+  --line-strong:  #D1D5DB;
+  --on-dark:       #FFFFFF;
+  --on-dark-fade:  rgba(255, 255, 255, 0.08);
+  --on-dark-mute:  var(--sidebar-mut);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }

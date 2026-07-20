@@ -15,6 +15,8 @@ let submissionRoutes = require('./routes/submissionRoutes.js');
 let dashboardRoutes = require('./routes/dashboardRoutes.js');
 let facultyDashboardRoutes = require('./routes/facultyDashboardRoutes.js');
 let profileRoutes = require('./routes/profileRoutes.js');
+let notesRoutes = require('./routes/notesRoutes.js');
+let announcementRoutes = require('./routes/announcementRoutes.js');
 
 // Global error handlers to prevent silent crashes
 process.on('uncaughtException', (err) => {
@@ -70,6 +72,8 @@ app.use('/dashboard', dashboardRoutes);
 app.use('/dashboard/faculty', facultyDashboardRoutes);
 app.use('/faculty', facultyDashboardRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/notes', notesRoutes);
+app.use('/announcements', announcementRoutes);
 
 app.get('/', (req, res) => {
     res.send('🎓 College ERP Backend is working!');
