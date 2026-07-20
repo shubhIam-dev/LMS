@@ -17,16 +17,21 @@ import StudentDashboard from "./pages/StudentDashboard";
 import FacultyDashboard from "./pages/FacultyDashboard";
 import StudentProfile from "./pages/StudentProfile";
 import FacultyProfile from "./pages/FacultyProfile";
-
+import { useLocation } from "react-router-dom";
 import "./App.css";
 
 function Layout({ children }) {
   const isAuthed = useSelector(selectIsAuthed);
+  const location=useLocation()
+  const hideSidebar = location.pathname === "/";
+
 
   return (
-    <div className={`app-layout ${isAuthed ? "has-sidebar" : ""}`}>
-      {isAuthed && <Sidebar />}
-      <main className="main-content">{children}</main>
+    <div className={`app-layout ${isAuthed && !hideSidebar ? "has-sidebar" : ""}`}>
+      {isAuthed && !hideSidebar && <Sidebar />}
+      <main className="main-content">
+        {children}
+      </main>
     </div>
   );
 }
