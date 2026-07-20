@@ -1,19 +1,22 @@
 // StudentDashboard — aggregated academic overview fetched from the backend API.
-// Shows enrolled courses, pending assignments, marks/scores, and quick links.
-// Supports read-only mode when viewed by a faculty member via /dashboard/student/:studentId.
+// Shows enrolled courses, pending assignments, marks/scores, quick links,
+// and a compact calendar widget that links to the full Calendar page.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { selectUser, selectRole } from "../store/authSlice";
 import { dashboardApi } from "../services/api";
+import MiniCalendar from "../components/Calendar/MiniCalendar";
+import EventCard from "../components/Schedule/EventCard";
+import calendarEvents, { getEventsByDate } from "../data/calendarEvents";
 
-function StudentDashboard() {
+function StudentDashboard({ previewMode = false }) {
   const { studentId } = useParams();
   const navigate = useNavigate();
   const user = useSelector(selectUser);
   const role = useSelector(selectRole);
-  const isReadOnly = Boolean(studentId) && (role === "teacher" || role === "superadmin");
+  const isReadOnly = Boolean(studentId) && (role === "teacher" || role === "superadmin") || previewMode;
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,6 +38,10 @@ function StudentDashboard() {
       setLoading(false);
     }
   }
+
+  // ── Schedule widget state ──
+  const [widgetDate, setWidgetDate] = useState("2026-07-20");
+  const todayEvents = useMemo(() => getEventsByDate("2026-07-20"), []);
 
   // ── Loading state ──
   if (loading) {
@@ -74,16 +81,14 @@ function StudentDashboard() {
   const courses = data?.courses || [];
   const assignments = data?.assignments || [];
   const summary = data?.summary || {};
-  const marks = data?.marks || [];
 
-  // Get the student name from the fetched data
   const displayName = isReadOnly
     ? (data?.studentName || "Student")
     : user?.name || "Student";
 
   return (
     <div className="dashboard-page">
-      {/* ── Read-Only Banner (visible only when faculty views a student) ── */}
+      {/* ── Read-Only Banner ── */}
       {isReadOnly && (
         <div className="readonly-banner">
           <div className="readonly-banner-content">
@@ -187,9 +192,7 @@ function StudentDashboard() {
               </svg>
             </div>
             <div className="dash-stat-body">
-              <span className="dash-stat-value">
-                {summary?.gradedCount ?? 0}
-              </span>
+              <span className="dash-stat-value">{summary?.gradedCount ?? 0}</span>
               <span className="dash-stat-label">Graded</span>
             </div>
           </div>
@@ -198,7 +201,6 @@ function StudentDashboard() {
 
       {/* ── Courses + Assignments Cards ── */}
       <div className="dash-cards-section">
-        {/* Courses */}
         <div className="dash-overview-card">
           <div className="dash-card-header">
             <span className="dash-card-title">My Courses</span>
@@ -226,7 +228,6 @@ function StudentDashboard() {
           </div>
         </div>
 
-        {/* Pending Assignments */}
         <div className="dash-overview-card">
           <div className="dash-card-header">
             <span className="dash-card-title">Pending Assignments</span>
@@ -259,6 +260,49 @@ function StudentDashboard() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* ── Calendar Widget + Today's Schedule ── */}
+      <div className="dash-calendar-row">
+        <div className="dash-widget-card">
+          <div className="dash-card-header">
+            <span className="dash-card-title">Calendar</span>
+            <Link to="/calendar" className="dash-widget-link">View Full →</Link>
+          </div>
+          <MiniCalendar
+            events={calendarEvents}
+            selectedDate={widgetDate}
+            onDateSelect={(date) => {
+              setWidgetDate(date);
+              navigate(`/calendar?date=${date}`);
+            }}
+          />
+        </div>
+
+        <div className="dash-widget-card">
+          <div className="dash-card-header">
+            <span className="dash-card-title">Today's Schedule</span>
+            <span className="dash-card-count">{todayEvents.length}</span>
+          </div>
+          <div className="dash-widget-body">
+            {todayEvents.length > 0 ? (
+              todayEvents.slice(0, 4).map((e) => (
+                <EventCard key={e.id} event={e} compact />
+              ))
+            ) : (
+              <div className="dash-empty">No lectures today</div>
+            )}
+            {todayEvents.length > 4 && (
+              <Link to="/calendar" className="dash-widget-more">+{todayEvents.length - 4} more</Link>
+            )}
+          </div>
+          <Link to="/calendar" className="dash-widget-footer">
+            View Full Calendar
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+            </svg>
+          </Link>
         </div>
       </div>
 
