@@ -4,9 +4,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-const {
-    getProfile,
-    updateProfile,
+const {getProfile,updateProfile,
     changePassword,
     uploadImage,
 } = require("../controllers/profileController");

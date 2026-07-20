@@ -1,31 +1,37 @@
 let Course=require("../models/Courses.model.js")
 let User=require("../models/User.model.js")
 
-async function addCourse(req,res){
-    try {
-        const { CourseName, CourseCode } = req.body
-        if (!CourseName || !CourseCode) {
-            return res.status(400).json({ msg: "CourseName and CourseCode are required" })
-        }
-
-        // Pass the whole body through so optional fields (description, credits,
-        // semester, instructor, enrolledStudents) are saved too — the schema
-        // ignores anything it doesn't define.
-        const newCourse = new Course(req.body)
-        await newCourse.save()
-
-        res.status(201).json({ msg: "Course created", course: newCourse })
-    } catch (err) {
-        res.status(500).json({ msg: "Error creating course", error: err.message })
+function addCourse(req,res){
+    const { CourseName, CourseCode } = req.body
+    if (!CourseName || !CourseCode) {
+        return res.status(400).json({ msg: "CourseName and CourseCode are required" })
     }
+
+    // Pass the whole body through so optional fields (description, credits,
+    // semester, instructor, enrolledStudents) are saved too — the schema
+    // ignores anything it doesn't define.
+    const newCourse = new Course(req.body)
+    newCourse.save()
+        .then(() => res.status(201).json({ msg: "Course created", course: newCourse }))
+        .catch((err) => res.status(500).json({ msg: "Error creating course", error: err.message }))
 }
 
 function updateCourseById(req,res){
-    const { _id, CourseName, CourseCode } = req.body
+    const { _id } = req.body
     if (!_id) return res.status(400).json({ msg: "_id is required" })
 
-    Course.updateOne({ _id }, { CourseName, CourseCode })
-        .then((data) => res.json(data))
+    // Build update object from allowed fields (ignore _id and any other non-schema fields)
+    const allowed = ["CourseName","CourseCode","credits","semester","description","instructor"];
+    const update = {};
+    for (const field of allowed) {
+      if (req.body[field] !== undefined) update[field] = req.body[field];
+    }
+
+    Course.findByIdAndUpdate(_id, update, { new: true, runValidators: true })
+        .then((course) => {
+          if (!course) return res.status(404).json({ msg: "Course not found" });
+          res.json({ msg: "Course updated", course });
+        })
         .catch((err) => res.status(500).json({ msg: "Error updating course", error: err.message }))
 }
 
@@ -54,12 +60,15 @@ function getCourseById(req,res){
 
     // findById takes the id value directly, NOT an object.
     Course.findById(_id)
+        .populate("instructor", "name")
+        .populate("enrolledStudents", "name email")
         .then((data) => data ? res.json(data) : res.status(404).json({ msg: "Course not found" }))
         .catch((err) => res.status(500).json({ msg: "Error fetching course", error: err.message }))
 }
 
 function getAllCourses(req,res){
     Course.find()
+        .populate("instructor", "name")
         .then((data) => res.json(data))
         .catch((err) => res.status(500).json({ msg: "Error fetching courses", error: err.message }))
 }
@@ -69,26 +78,31 @@ function getAllCourses(req,res){
 // A teacher enrolls a student in a course. This is a many-to-many link, so
 // we update BOTH sides: the student appears in course.enrolledStudents AND
 // the course appears in user.enrolledCourses. $addToSet prevents duplicates.
-async function enrollStudent(req,res){
-    try {
-        const { courseId, studentId } = req.body;
-        if (!courseId || !studentId) {
-            return res.status(400).json({ msg: "courseId and studentId are required" });
-        }
-
-        const course = await Course.findById(courseId);
-        if (!course) return res.status(404).json({ msg: "Course not found" });
-
-        const student = await User.findById(studentId);
-        if (!student) return res.status(404).json({ msg: "Student not found" });
-
-        await Course.updateOne({ _id: courseId }, { $addToSet: { enrolledStudents: studentId } });
-        await User.updateOne({ _id: studentId }, { $addToSet: { enrolledCourses: courseId } });
-
-        res.json({ msg: "Student enrolled", courseId, studentId });
-    } catch (err) {
-        res.status(500).json({ msg: "Error enrolling student", error: err.message });
+function enrollStudent(req,res){
+    const { courseId, studentId } = req.body;
+    if (!courseId || !studentId) {
+        return res.status(400).json({ msg: "courseId and studentId are required" });
     }
+
+    Course.findById(courseId)
+        .then((course) => {
+            if (!course) return Promise.reject({ status: 404, msg: "Course not found" });
+            return User.findById(studentId);
+        })
+        .then((student) => {
+            if (!student) return Promise.reject({ status: 404, msg: "Student not found" });
+            return Promise.all([
+                Course.updateOne({ _id: courseId }, { $addToSet: { enrolledStudents: studentId } }),
+                User.updateOne({ _id: studentId }, { $addToSet: { enrolledCourses: courseId } })
+            ]);
+        })
+        .then(() => res.json({ msg: "Student enrolled", courseId, studentId }))
+        .catch((err) => {
+            if (err && err.status) {
+                return res.status(err.status).json({ msg: err.msg });
+            }
+            res.status(500).json({ msg: "Error enrolling student", error: err.message });
+        });
 }
 
 // GET /course/getStudents?courseId=...   (staff only)
@@ -106,5 +120,74 @@ function getCourseStudents(req,res){
         .catch((err) => res.status(500).json({ msg: "Error fetching roster", error: err.message }));
 }
 
-module.exports={addCourse,updateCourseById,deleteCourse,addCourses,getCourseById,getAllCourses,enrollStudent,getCourseStudents}
+// POST /course/selfEnroll
+// Body: { courseId }
+// A student enrolls THEMSELVES in a course (same logic as enrollStudent but
+// reads the student ID from the authenticated token instead of the body).
+function selfEnroll(req,res){
+    const { courseId } = req.body;
+    const studentId = req.user.id;   // from JWT token — must be a student
+    if (!courseId) {
+        return res.status(400).json({ msg: "courseId is required" });
+    }
+
+    Course.findById(courseId)
+        .then((course) => {
+            if (!course) return Promise.reject({ status: 404, msg: "Course not found" });
+            return User.findById(studentId);
+        })
+        .then((student) => {
+            if (!student) return Promise.reject({ status: 404, msg: "Student not found" });
+            if (student.role !== "student") return Promise.reject({ status: 403, msg: "Only students can self-enroll" });
+            return Promise.all([
+                Course.updateOne({ _id: courseId }, { $addToSet: { enrolledStudents: studentId } }),
+                User.updateOne({ _id: studentId }, { $addToSet: { enrolledCourses: courseId } })
+            ]);
+        })
+        .then(() => res.json({ msg: "Enrolled successfully", courseId, studentId }))
+        .catch((err) => {
+            if (err && err.status) {
+                return res.status(err.status).json({ msg: err.msg });
+            }
+            res.status(500).json({ msg: "Error enrolling", error: err.message });
+        });
+}
+
+// GET /course/progress?courseId=...&studentId=...
+// Returns how many assignments in this course the student has completed,
+// total marks, and pending assignments. Requires both params.
+function getCourseProgress(req,res){
+    const { courseId, studentId } = req.query;
+    if (!courseId || !studentId) {
+        return res.status(400).json({ msg: "courseId and studentId are required" });
+    }
+
+    const Assignment = require("../models/assignments.model");
+    const Submission = require("../models/Submission.model");
+
+    let totalAssignments = 0;
+    let submitted = 0;
+    let graded = 0;
+    let totalMarks = 0;
+    let earnedMarks = 0;
+
+    Assignment.find({ courseId })
+        .then((assignments) => {
+            totalAssignments = assignments.length;
+            const ids = assignments.map((a) => a._id);
+            return Submission.find({ studentId, assignmentId: { $in: ids } });
+        })
+        .then((submissions) => {
+            submitted = submissions.length;
+            graded = submissions.filter((s) => s.status === "graded").length;
+            for (const s of submissions) {
+                if (s.marksAwarded) earnedMarks += s.marksAwarded;
+                if (s.totalMarks) totalMarks += s.totalMarks;
+            }
+            res.json({ courseId, studentId, totalAssignments, submitted, graded, earnedMarks, totalMarks });
+        })
+        .catch((err) => res.status(500).json({ msg: "Error fetching progress", error: err.message }));
+}
+
+module.exports={addCourse,updateCourseById,deleteCourse,addCourses,getCourseById,getAllCourses,enrollStudent,getCourseStudents,selfEnroll,getCourseProgress}
 

@@ -4,9 +4,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { assignmentApi } from "../services/api";
+import { useSelector } from "react-redux"
+import { selectRole } from "../store/authSlice"
 
 function Assignments() {
   const navigate = useNavigate();
+  const role = useSelector(selectRole)
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -60,8 +63,17 @@ function Assignments() {
   return (
     <div className="page-content">
       <div className="page-header">
-        <h1>Assignments</h1>
-        <p>Track all your assignments, projects, and deadlines.</p>
+        <div className="page-header-row">
+          <div>
+            <h1>Assignments</h1>
+            <p>Track all your assignments, projects, and deadlines.</p>
+          </div>
+          {(role === "teacher" || role === "superadmin") && (
+            <button className="console-btn" onClick={() => navigate("/manage")}>
+              + Add / Edit Assignments
+            </button>
+          )}
+        </div>
       </div>
 
       {error && <div className="error-message">{error}</div>}

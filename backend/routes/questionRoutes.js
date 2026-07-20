@@ -1,5 +1,5 @@
 let express = require("express");
-let { addQuestion, addQuestions, getAllQuestions, getQuestionById, deleteQuestion } = require("../controllers/questionController.js");
+let { addQuestion, addQuestions, getAllQuestions, getQuestionById, deleteQuestion,updateQuestionById } = require("../controllers/questionController.js");
 let { authenticate, authorize } = require("../middleware/auth");
 
 const router = express.Router();
@@ -13,5 +13,6 @@ const staff = [authenticate, authorize("teacher", "superadmin")];
 router.post("/addQuestion", staff, addQuestion);
 router.post("/addQuestions", staff, addQuestions);
 router.post("/deleteQuestion", staff, deleteQuestion);
+router.put("/updateQuestionById",staff,updateQuestionById)
 
 module.exports = router;

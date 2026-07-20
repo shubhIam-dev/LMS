@@ -7,6 +7,7 @@ import Sidebar from "./components/Sidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import Courses from "./pages/Courses";
+import CourseDetail from "./pages/CourseDetail";
 import Assignments from "./pages/Assignments";
 import Marks from "./pages/Marks";
 import Manage from "./pages/Manage";
@@ -122,6 +123,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Courses />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/:id"
+            element={
+              <ProtectedRoute>
+                <CourseDetail />
               </ProtectedRoute>
             }
           />

@@ -1,5 +1,5 @@
 let express = require("express")
-let { addCourse, updateCourseById, deleteCourse, addCourses, getCourseById, getAllCourses, enrollStudent, getCourseStudents } = require("../controllers/courses.controllers.js")
+let { addCourse, updateCourseById, deleteCourse, addCourses, getCourseById, getAllCourses, enrollStudent, getCourseStudents, selfEnroll, getCourseProgress } = require("../controllers/courses.controllers.js")
 let { authenticate, authorize } = require("../middleware/auth")
 
 const router = express.Router()
@@ -16,5 +16,11 @@ router.post("/updateCourseById", staff, updateCourseById)
 router.post("/deleteCourse", staff, deleteCourse)   // was GET — POST is correct for a mutation
 router.post("/enrollStudent", staff, enrollStudent)
 router.get("/getStudents", staff, getCourseStudents)
+
+// Student self-service
+router.post("/selfEnroll", authenticate, selfEnroll)
+
+// Course progress (requires both params — controlled by auth)
+router.get("/progress", authenticate, getCourseProgress)
 
 module.exports = router;

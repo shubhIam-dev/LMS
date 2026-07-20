@@ -56,4 +56,42 @@ function deleteQuestion(req, res) {
         .catch(err => res.status(500).json({ msg: "Error deleting question", error: err.message }));
 }
 
-module.exports = { addQuestion, addQuestions, getAllQuestions, getQuestionById, deleteQuestion };
+function updateQuestionById(req,res){
+    const{id}=req.body
+     Question.findById(id)
+        .then((question) => {
+            if (!question) {
+                return res.status(404).json({msg: "Question not found"});
+            }
+            if (  question.createdBy.toString() !== req.user.id &&
+            req.user.role !== "superadmin"
+            ){
+                return res.status(403).json({msg: "You are not authorized to update this question"});
+            }
+             question.text = req.body.text ?? question.text;
+            question.topic = req.body.topic ?? question.topic;
+            question.marks = req.body.marks ?? question.marks;
+            question.difficulty =req.body.difficulty ?? question.difficulty;
+            question.questionType =req.body.questionType ?? question.questionType;
+
+            return question.save();
+        })
+        .then((updatedQuestion) => {
+
+            if (!updatedQuestion) return;
+
+            res.json({
+                msg: "Question updated successfully",
+                question: updatedQuestion
+            });
+
+        })
+        .catch((err) => {
+            res.status(500).json({
+                msg: "Error updating question",
+                error: err.message
+            });
+        });
+}
+
+module.exports = { addQuestion, addQuestions, getAllQuestions, getQuestionById, deleteQuestion,updateQuestionById};
