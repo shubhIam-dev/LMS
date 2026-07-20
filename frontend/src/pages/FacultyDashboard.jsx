@@ -1,20 +1,250 @@
-// FacultyDashboard — teaching overview fetched from the backend API.
-// Shows courses taught, students, assignments, and quick management links.
-// Features a role/action dropdown to view assigned students.
+// FacultyDashboard — teaching overview with view mode switching.
+// Faculty can toggle between their own dashboard and a student preview.
+// View mode is persisted in localStorage.
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { selectUser, selectRole } from "../store/authSlice";
 import { dashboardApi } from "../services/api";
+import MiniCalendar from "../components/Calendar/MiniCalendar";
+import EventCard from "../components/Schedule/EventCard";
+import calendarEvents, { getEventsByDate } from "../data/calendarEvents";
+import RoleSwitcher from "../components/ViewSwitcher/RoleSwitcher";
+import StudentDashboard from "./StudentDashboard";
 
+// ── Wrapper: renders the faculty's own dashboard content ──
+function FacultyDashboardContent({ user, role, data, students, studentsLoading, searchQuery, filteredStudents, handleStudentClick, courses, widgetDate, setWidgetDate, navigate, todayEvents, dropdownRef, dropdownOpen, setDropdownOpen }) {
+  return (
+    <>
+      {/* ── Hero / Welcome ── */}
+      <div className="dash-hero">
+        <div className="dash-hero-content">
+          <div className="dash-hero-text">
+            <h1 className="dash-hero-greeting">
+              Welcome, {user?.name || "Faculty"}
+            </h1>
+            <p className="dash-hero-subtitle">
+              Manage your courses, assignments, and student performance.
+            </p>
+          </div>
+          <div className="dash-hero-badge">
+            <div className="faculty-dropdown faculty-dropdown--students" ref={dropdownRef}>
+              <button
+                className={`faculty-dropdown-trigger ${dropdownOpen ? "open" : ""}`}
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                </svg>
+                <span className="faculty-dropdown-label">Students</span>
+                <svg
+                  className={`faculty-dropdown-arrow ${dropdownOpen ? "rotated" : ""}`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  width="14"
+                  height="14"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+
+              {dropdownOpen && (
+                <div className="faculty-dropdown-menu">
+                  <div className="faculty-dropdown-header">
+                    <span className="faculty-dropdown-title">Your Students</span>
+                    <span className="faculty-dropdown-count">{students.length}</span>
+                  </div>
+                  <div className="faculty-search-wrapper">
+                    <svg className="faculty-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                    <input type="text" className="faculty-search-input" placeholder="Search students..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} autoFocus />
+                  </div>
+                  <div className="faculty-student-list">
+                    {studentsLoading ? (
+                      <div className="faculty-student-empty">Loading students...</div>
+                    ) : filteredStudents.length > 0 ? (
+                      filteredStudents.map((s) => (
+                        <button key={s._id} className="faculty-student-item" onClick={() => handleStudentClick(s._id)}>
+                          <div className="faculty-student-avatar">{s.name?.[0]?.toUpperCase() || "?"}</div>
+                          <div className="faculty-student-info">
+                            <span className="faculty-student-name">{s.name || "Unknown"}</span>
+                            <span className="faculty-student-meta">
+                              {s.rollNumber || s.department ? [s.rollNumber, s.department].filter(Boolean).join(" · ") : s.email || ""}
+                            </span>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="faculty-student-empty">{searchQuery ? "No students match your search." : "No students assigned yet."}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Stats ── */}
+      <div className="dash-stats-section">
+        <div className="dash-stats-grid">
+          <div className="dash-stat-card">
+            <div className="dash-stat-icon dash-stat-icon--courses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg></div>
+            <div className="dash-stat-body"><span className="dash-stat-value">{courses.length}</span><span className="dash-stat-label">Courses</span></div>
+          </div>
+          <div className="dash-stat-card">
+            <div className="dash-stat-icon dash-stat-icon--assignments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="8" y="2" width="8" height="4" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /></svg></div>
+            <div className="dash-stat-body"><span className="dash-stat-value">{data?.stats?.assignments ?? "—"}</span><span className="dash-stat-label">Assignments</span></div>
+          </div>
+          <div className="dash-stat-card">
+            <div className="dash-stat-icon dash-stat-icon--courses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="6" /><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5" /></svg></div>
+            <div className="dash-stat-body"><span className="dash-stat-value">{data?.stats?.students ?? "—"}</span><span className="dash-stat-label">Students</span></div>
+          </div>
+          <div className="dash-stat-card">
+            <div className="dash-stat-icon dash-stat-icon--courses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></div>
+            <div className="dash-stat-body"><span className="dash-stat-value">{user?.name?.split(" ")[0] || "Faculty"}</span><span className="dash-stat-label">Welcome</span></div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── My Courses ── */}
+      <div className="dash-detailed-section">
+        <div className="dash-section-header">
+          <h2 className="dash-section-title">My Courses</h2>
+          <span className="dash-card-count">{courses.length}</span>
+        </div>
+        <div className="dash-teacher-courses">
+          {courses.length > 0 ? (
+            courses.map((course) => (
+              <div key={course._id || course.code} className="dash-teacher-row">
+                <div className="dash-teacher-info">
+                  <span className="dash-teacher-name">{course.name || course.CourseName || "Untitled"}</span>
+                  <span className="dash-teacher-code">{course.code || course.CourseCode || ""}</span>
+                </div>
+                <span className="dash-teacher-meta">{course.studentCount ?? course.enrolledStudents?.length ?? 0} students</span>
+              </div>
+            ))
+          ) : (
+            <div className="dash-empty">No courses assigned yet.</div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Calendar Widget + Today's Schedule ── */}
+      <div className="dash-calendar-row">
+        <div className="dash-widget-card">
+          <div className="dash-card-header">
+            <span className="dash-card-title">Calendar</span>
+            <Link to="/calendar" className="dash-widget-link">View Full →</Link>
+          </div>
+          <MiniCalendar events={calendarEvents} selectedDate={widgetDate} onDateSelect={(date) => { setWidgetDate(date); navigate(`/calendar?date=${date}`); }} />
+        </div>
+        <div className="dash-widget-card">
+          <div className="dash-card-header">
+            <span className="dash-card-title">Today's Schedule</span>
+            <span className="dash-card-count">{todayEvents.length}</span>
+          </div>
+          <div className="dash-widget-body">
+            {todayEvents.length > 0 ? (
+              todayEvents.slice(0, 4).map((e) => <EventCard key={e.id} event={e} compact />)
+            ) : (
+              <div className="dash-empty">No lectures today</div>
+            )}
+            {todayEvents.length > 4 && <Link to="/calendar" className="dash-widget-more">+{todayEvents.length - 4} more</Link>}
+          </div>
+          <Link to="/calendar" className="dash-widget-footer">
+            View Full Calendar
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Quick Management Links ── */}
+      <div className="dash-links-section">
+        <div className="dash-section-header">
+          <h2 className="dash-section-title">Quick Actions</h2>
+        </div>
+        <div className="dash-links-grid">
+          <Link to="/courses" className="dash-link-card">
+            <div className="dash-link-icon dash-link-icon--courses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg></div>
+            <div className="dash-link-body"><span className="dash-link-text">Manage Courses</span><span className="dash-link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span></div>
+          </Link>
+          <Link to="/assignments" className="dash-link-card">
+            <div className="dash-link-icon dash-link-icon--assignments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="8" y="2" width="8" height="4" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /></svg></div>
+            <div className="dash-link-body"><span className="dash-link-text">Manage Assignments</span><span className="dash-link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span></div>
+          </Link>
+          <Link to="/marks" className="dash-link-card">
+            <div className="dash-link-icon dash-link-icon--marks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="6" /><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5" /></svg></div>
+            <div className="dash-link-body"><span className="dash-link-text">View Marks</span><span className="dash-link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span></div>
+          </Link>
+          <Link to="/manage" className="dash-link-card">
+            <div className="dash-link-icon dash-link-icon--assignments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14" /><path d="M5 12h14" /></svg></div>
+            <div className="dash-link-body"><span className="dash-link-text">Teacher Console</span><span className="dash-link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span></div>
+          </Link>
+          <Link to="/faculty/profile" className="dash-link-card">
+            <div className="dash-link-icon dash-link-icon--courses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></div>
+            <div className="dash-link-body"><span className="dash-link-text">My Profile</span><span className="dash-link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span></div>
+          </Link>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Preview Banner ──
+function PreviewBanner({ onBack }) {
+  return (
+    <div className="preview-banner">
+      <div className="preview-banner-content">
+        <div className="preview-banner-left">
+          <span className="preview-banner-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </span>
+          <div className="preview-banner-info">
+            <span className="preview-banner-title">Student Preview Mode</span>
+            <span className="preview-banner-desc">You are viewing the dashboard as a student. This is a preview only. No data can be modified.</span>
+          </div>
+        </div>
+        <button className="preview-banner-btn" onClick={onBack}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>
+          Back to Faculty View
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Main FacultyDashboard ──
 function FacultyDashboard() {
   const user = useSelector(selectUser);
   const role = useSelector(selectRole);
   const navigate = useNavigate();
+
+  // ── View mode state (faculty / student) with localStorage ──
+  const [viewMode, setViewMode] = useState(() => {
+    const saved = localStorage.getItem("facultyViewMode");
+    return saved === "student" ? "student" : "faculty";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("facultyViewMode", viewMode);
+  }, [viewMode]);
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // ── Schedule widget state ──
+  const [widgetDate, setWidgetDate] = useState("2026-07-20");
+  const todayEvents = useMemo(() => getEventsByDate("2026-07-20"), []);
 
   // ── Student dropdown state ──
   const [students, setStudents] = useState([]);
@@ -23,12 +253,10 @@ function FacultyDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false);
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -70,7 +298,6 @@ function FacultyDashboard() {
     navigate(`/dashboard/student/${studentId}`);
   }
 
-  // Filter students by search
   const filteredStudents = students.filter((s) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -81,6 +308,8 @@ function FacultyDashboard() {
       (s.email || "").toLowerCase().includes(q)
     );
   });
+
+  const courses = data?.courses || [];
 
   // ── Loading state ──
   if (loading) {
@@ -100,302 +329,48 @@ function FacultyDashboard() {
         <div style={{ padding: "80px 24px", textAlign: "center" }}>
           <h2 style={{ marginBottom: 12 }}>Something went wrong</h2>
           <p style={{ color: "var(--muted)", marginBottom: 24 }}>{error}</p>
-          <button className="login-btn" onClick={fetchDashboard}>
-            Try Again
-          </button>
+          <button className="login-btn" onClick={fetchDashboard}>Try Again</button>
         </div>
       </div>
     );
   }
 
-  const courses = data?.courses || [];
-
   return (
     <div className="dashboard-page">
-      {/* ── Hero / Welcome ── */}
-      <div className="dash-hero">
-        <div className="dash-hero-content">
-          <div className="dash-hero-text">
-            <h1 className="dash-hero-greeting">
-              Welcome, {user?.name || "Faculty"}
-            </h1>
-            <p className="dash-hero-subtitle">
-              Manage your courses, assignments, and student performance.
-            </p>
-          </div>
-          <div className="dash-hero-badge">
-            {/* ── Role Dropdown ── */}
-            <div className="faculty-dropdown" ref={dropdownRef}>
-              <button
-                className={`faculty-dropdown-trigger ${dropdownOpen ? "open" : ""}`}
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-                <span className="faculty-dropdown-label">
-                  {role === "superadmin" ? "Super Admin" : "Faculty"}
-                </span>
-                <svg
-                  className={`faculty-dropdown-arrow ${dropdownOpen ? "rotated" : ""}`}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
-
-              {dropdownOpen && (
-                <div className="faculty-dropdown-menu">
-                  <div className="faculty-dropdown-header">
-                    <span className="faculty-dropdown-title">Your Students</span>
-                    <span className="faculty-dropdown-count">
-                      {students.length}
-                    </span>
-                  </div>
-
-                  {/* Search */}
-                  <div className="faculty-search-wrapper">
-                    <svg
-                      className="faculty-search-icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m21 21-4.3-4.3" />
-                    </svg>
-                    <input
-                      type="text"
-                      className="faculty-search-input"
-                      placeholder="Search students..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      autoFocus
-                    />
-                  </div>
-
-                  {/* Student List */}
-                  <div className="faculty-student-list">
-                    {studentsLoading ? (
-                      <div className="faculty-student-empty">
-                        Loading students...
-                      </div>
-                    ) : filteredStudents.length > 0 ? (
-                      filteredStudents.map((s) => (
-                        <button
-                          key={s._id}
-                          className="faculty-student-item"
-                          onClick={() => handleStudentClick(s._id)}
-                        >
-                          <div className="faculty-student-avatar">
-                            {s.name?.[0]?.toUpperCase() || "?"}
-                          </div>
-                          <div className="faculty-student-info">
-                            <span className="faculty-student-name">
-                              {s.name || "Unknown"}
-                            </span>
-                            <span className="faculty-student-meta">
-                              {s.rollNumber || s.department
-                                ? [s.rollNumber, s.department]
-                                    .filter(Boolean)
-                                    .join(" · ")
-                                : s.email || ""}
-                            </span>
-                          </div>
-                        </button>
-                      ))
-                    ) : (
-                      <div className="faculty-student-empty">
-                        {searchQuery
-                          ? "No students match your search."
-                          : "No students assigned yet."}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* ── Role Switcher Bar ── */}
+      <div className="role-switcher-bar">
+        <RoleSwitcher viewMode={viewMode} onViewModeChange={setViewMode} />
       </div>
 
-      {/* ── Stats ── */}
-      <div className="dash-stats-section">
-        <div className="dash-stats-grid">
-          <div className="dash-stat-card">
-            <div className="dash-stat-icon dash-stat-icon--courses">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              </svg>
-            </div>
-            <div className="dash-stat-body">
-              <span className="dash-stat-value">{courses.length}</span>
-              <span className="dash-stat-label">Courses</span>
-            </div>
-          </div>
-
-          <div className="dash-stat-card">
-            <div className="dash-stat-icon dash-stat-icon--assignments">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="8" y="2" width="8" height="4" rx="1" />
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-              </svg>
-            </div>
-            <div className="dash-stat-body">
-              <span className="dash-stat-value">{data?.stats?.assignments ?? "—"}</span>
-              <span className="dash-stat-label">Assignments</span>
-            </div>
-          </div>
-
-          <div className="dash-stat-card">
-            <div className="dash-stat-icon dash-stat-icon--courses">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="8" r="6" />
-                <path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5" />
-              </svg>
-            </div>
-            <div className="dash-stat-body">
-              <span className="dash-stat-value">{data?.stats?.students ?? "—"}</span>
-              <span className="dash-stat-label">Students</span>
+      {/* ── Animated Content ── */}
+      <div className={`view-transition ${viewMode === "faculty" ? "view-enter" : "view-exit"}`}>
+        {viewMode === "faculty" ? (
+          <FacultyDashboardContent
+            user={user}
+            role={role}
+            data={data}
+            students={students}
+            studentsLoading={studentsLoading}
+            searchQuery={searchQuery}
+            filteredStudents={filteredStudents}
+            handleStudentClick={handleStudentClick}
+            courses={courses}
+            widgetDate={widgetDate}
+            setWidgetDate={setWidgetDate}
+            navigate={navigate}
+            todayEvents={todayEvents}
+            dropdownRef={dropdownRef}
+            dropdownOpen={dropdownOpen}
+            setDropdownOpen={setDropdownOpen}
+          />
+        ) : (
+          <div className="view-enter">
+            <PreviewBanner onBack={() => setViewMode("faculty")} />
+            <div className="preview-student-content">
+              <StudentDashboard previewMode={true} />
             </div>
           </div>
-
-          <div className="dash-stat-card">
-            <div className="dash-stat-icon dash-stat-icon--courses">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </div>
-            <div className="dash-stat-body">
-              <span className="dash-stat-value">{user?.name?.split(" ")[0] || "Faculty"}</span>
-              <span className="dash-stat-label">Welcome</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── My Courses ── */}
-      <div className="dash-detailed-section">
-        <div className="dash-section-header">
-          <h2 className="dash-section-title">My Courses</h2>
-          <span className="dash-card-count">{courses.length}</span>
-        </div>
-        <div className="dash-teacher-courses">
-          {courses.length > 0 ? (
-            courses.map((course) => (
-              <div key={course._id || course.code} className="dash-teacher-row">
-                <div className="dash-teacher-info">
-                  <span className="dash-teacher-name">
-                    {course.name || course.CourseName || "Untitled"}
-                  </span>
-                  <span className="dash-teacher-code">
-                    {course.code || course.CourseCode || ""}
-                  </span>
-                </div>
-                <span className="dash-teacher-meta">
-                  {course.studentCount ?? course.enrolledStudents?.length ?? 0} students
-                </span>
-              </div>
-            ))
-          ) : (
-            <div className="dash-empty">No courses assigned yet.</div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Quick Management Links ── */}
-      <div className="dash-links-section">
-        <div className="dash-section-header">
-          <h2 className="dash-section-title">Quick Actions</h2>
-        </div>
-        <div className="dash-links-grid">
-          <Link to="/courses" className="dash-link-card">
-            <div className="dash-link-icon dash-link-icon--courses">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-              </svg>
-            </div>
-            <div className="dash-link-body">
-              <span className="dash-link-text">Manage Courses</span>
-              <span className="dash-link-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </Link>
-          <Link to="/assignments" className="dash-link-card">
-            <div className="dash-link-icon dash-link-icon--assignments">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="8" y="2" width="8" height="4" rx="1" />
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-              </svg>
-            </div>
-            <div className="dash-link-body">
-              <span className="dash-link-text">Manage Assignments</span>
-              <span className="dash-link-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </Link>
-          <Link to="/marks" className="dash-link-card">
-            <div className="dash-link-icon dash-link-icon--marks">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="8" r="6" />
-                <path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5" />
-              </svg>
-            </div>
-            <div className="dash-link-body">
-              <span className="dash-link-text">View Marks</span>
-              <span className="dash-link-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </Link>
-          <Link to="/manage" className="dash-link-card">
-            <div className="dash-link-icon dash-link-icon--assignments">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 5v14" /><path d="M5 12h14" />
-              </svg>
-            </div>
-            <div className="dash-link-body">
-              <span className="dash-link-text">Teacher Console</span>
-              <span className="dash-link-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </Link>
-          <Link to="/faculty/profile" className="dash-link-card">
-            <div className="dash-link-icon dash-link-icon--courses">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </div>
-            <div className="dash-link-body">
-              <span className="dash-link-text">My Profile</span>
-              <span className="dash-link-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </Link>
-        </div>
+        )}
       </div>
     </div>
   );
