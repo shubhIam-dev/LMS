@@ -19,6 +19,7 @@ import StudentProfile from "./pages/StudentProfile";
 import FacultyProfile from "./pages/FacultyProfile";
 import { useLocation } from "react-router-dom";
 import CalendarPage from "./pages/Calendar";
+import AttendanceSection from './pages/AttendanceSection';
 
 import "./App.css";
 
