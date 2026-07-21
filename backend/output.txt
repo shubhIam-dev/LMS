@@ -1,0 +1,4 @@
+◇ injected env (2) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+ALL FILES LOAD OK
+🚀 Server running on http://localhost:9000
+✅ Connected to MongoDB

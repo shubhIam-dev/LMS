@@ -17,7 +17,7 @@ import StudentDashboard from "./pages/StudentDashboard";
 import FacultyDashboard from "./pages/FacultyDashboard";
 import StudentProfile from "./pages/StudentProfile";
 import FacultyProfile from "./pages/FacultyProfile";
-
+import AttendanceSection from "./pages/AttendanceSection";
 import "./App.css";
 
 function Layout({ children }) {
@@ -71,6 +71,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <StudentProfile />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/attendance"
+            element={
+              <ProtectedRoute>
+                <AttendanceSection />
               </ProtectedRoute>
             }
           />

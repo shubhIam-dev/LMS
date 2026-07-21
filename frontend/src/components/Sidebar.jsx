@@ -27,6 +27,7 @@ function Sidebar() {
     { path: "/assignments", label: "Assignments" },
     { path: "/marks", label: "Marks" },
     { path: profilePath, label: "Profile" },
+    { path: "/attendance", label: "Attendance" },
     // Teachers and superadmins get the create/manage console.
     ...(isStaff ? [{ path: "/manage", label: "Teacher Console" }] : []),
   ];

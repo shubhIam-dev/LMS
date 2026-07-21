@@ -19,6 +19,38 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+
+// Central fetch wrapper: sets JSON headers, attaches the Bearer token, and
+// surfaces backend error messages.
+async function callApi(endpoint, options = {}) {
+  try {
+    const token = getToken();
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (!response.ok) {
+      let msg = "Something went wrong";
+      try {
+        const err = await response.json();
+        msg = err.msg || msg;
+      } catch {
+        /* non-JSON error body */
+      }
+      throw new Error(msg);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`API Error (${endpoint}):`, error);
+    throw error;
+  }
+}
+
 function getUserId() {
   try {
     const u = localStorage.getItem("user");
@@ -271,5 +303,36 @@ export const getAttendance = () => api.get("/attendance");
 export const getNotifications = () => api.get("/notifications");
 
 // ── EXPORTS for other modules ──────────────────────────────────────────────
+// ATTENDANCE
+// 📅 ATTENDANCE
+export const attendanceApi = {
+  // Teacher
+  addAttendance: (data) =>
+    callApi("/attendance/addAttendance", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
+  updateAttendance: (data) =>
+    callApi("/attendance/updateAttendance", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  getAttendanceByCourse: (courseId) =>
+    callApi(
+      `/attendance/getAttendanceByCourse?courseId=${encodeURIComponent(courseId)}`
+    ),
+
+  getCourseStudents: (courseId) =>
+    callApi(
+      `/attendance/getCourseStudents?courseId=${encodeURIComponent(courseId)}`
+    ),
+
+  // Student
+  getStudentAttendance: (studentId) =>
+    callApi(
+      `/attendance/getStudentAttendance?studentId=${encodeURIComponent(studentId)}`
+    ),
+};
 export { BASE_URL };
