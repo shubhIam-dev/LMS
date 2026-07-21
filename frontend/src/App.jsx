@@ -18,6 +18,8 @@ import FacultyDashboard from "./pages/FacultyDashboard";
 import StudentProfile from "./pages/StudentProfile";
 import FacultyProfile from "./pages/FacultyProfile";
 import { useLocation } from "react-router-dom";
+import CalendarPage from "./pages/Calendar";
+
 import "./App.css";
 
 function Layout({ children }) {
@@ -144,6 +146,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Assignments />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <ProtectedRoute>
+                <CalendarPage />
               </ProtectedRoute>
             }
           />
