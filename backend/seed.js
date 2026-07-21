@@ -23,7 +23,7 @@ const Question    = require("./models/Question.model");
 const Assignment  = require("./models/assignments.model");
 const Submission  = require("./models/Submission.model");
 const Marks       = require("./models/Marks.model");
-
+const Attendance  = require("./models/attendanceModel");
 async function seed() {
     if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes("<user>")) {
         console.error("\n❌  MONGODB_URI is not set. Copy .env.example → .env and paste your URI first.\n");

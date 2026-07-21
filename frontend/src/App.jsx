@@ -81,6 +81,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+           <Route
+            path="/attendance"
+            element={
+              <ProtectedRoute>
+                <AttendanceSection />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/profile/student/:studentId"
             element={
