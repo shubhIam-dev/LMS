@@ -18,6 +18,7 @@ let profileRoutes = require('./routes/profileRoutes.js');
 let notesRoutes = require('./routes/notesRoutes.js');
 let announcementRoutes = require('./routes/announcementRoutes.js');
 let attendancRoutes = require('./routes/attendanceRoutes.js');
+let adminDashboardRoutes=require('./routes/adminDashboardRoutes.js')
 // Global error handlers to prevent silent crashes
 process.on('uncaughtException', (err) => {
     console.error(' Uncaught Exception:', err.message);
@@ -75,6 +76,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/notes', notesRoutes);
 app.use('/announcements', announcementRoutes);
 app.use('/attendance',attendancRoutes)
+app.use('/dashboard/admin',adminDashboardRoutes)
 app.get('/', (req, res) => {
     res.send('🎓 College ERP Backend is working!');
 });

@@ -20,6 +20,7 @@ import FacultyProfile from "./pages/FacultyProfile";
 import { useLocation } from "react-router-dom";
 import CalendarPage from "./pages/Calendar";
 import AttendanceSection from './pages/AttendanceSection';
+import AdminDashboard from "./pages/AdminDashboard";
 
 import "./App.css";
 
@@ -44,8 +45,9 @@ function RoleRedirect() {
   const role = useSelector(selectRole);
 
   if (!isAuthed) return <Navigate to="/" replace />;
+  if (role === "superadmin") return <Navigate to="/dashboard/admin" replace />;
+  if (role === "teacher") return <Navigate to="/dashboard/faculty" replace />;
   if (role === "student") return <Navigate to="/dashboard/student" replace />;
-  if (role === "teacher" || role === "superadmin") return <Navigate to="/dashboard/faculty" replace />;
   return <Navigate to="/dashboard/student" replace />;
 }
 
@@ -95,6 +97,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <StudentProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ── Admin Routes ── */}
+          <Route
+            path="/dashboard/admin"
+            element={
+              <ProtectedRoute roles={["superadmin"]}>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />
