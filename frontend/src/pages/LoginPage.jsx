@@ -19,8 +19,9 @@ function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
 
-  // ── Theme toggle on login page ──
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  // Shares the same "theme" key/attribute as Sidebar's toggle, so switching
+  // here or on any other page stays in sync everywhere.
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
@@ -184,52 +185,6 @@ function LoginPage() {
       </div>
 
       <div className="login-container">
-        {/* ── Theme Toggle (top-right) ── */}
-        <button
-          onClick={toggleTheme}
-          title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          style={{
-            position: "absolute",
-            top: 20,
-            right: 24,
-            zIndex: 10,
-            width: 40,
-            height: 40,
-            borderRadius: "50%",
-            border: "1px solid var(--hud-line)",
-            background: "var(--panel-x)",
-            backdropFilter: "blur(8px)",
-            color: "var(--hud-muted)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--cyan)";
-            e.currentTarget.style.color = "var(--cyan)";
-            e.currentTarget.style.boxShadow = "0 0 12px rgba(0,229,255,0.3)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--hud-line)";
-            e.currentTarget.style.color = "var(--hud-muted)";
-            e.currentTarget.style.boxShadow = "none";
-          }}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-               strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-            {theme === "dark" ? (
-              <>
-                <circle cx="12" cy="12" r="5" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </>
-            ) : (
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            )}
-          </svg>
-        </button>
-
         <div
           className="tilt-wrap"
           onMouseMove={handleTiltMove}
@@ -237,6 +192,24 @@ function LoginPage() {
         >
           <div className="login-card" ref={tiltCardRef}>
             <div className="card-sweep"></div>
+
+            <button
+              type="button"
+              className="login-theme-toggle"
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {theme === "dark" ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5" />
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
+            </button>
 
             <div className="login-header">
               <div className="login-badge">

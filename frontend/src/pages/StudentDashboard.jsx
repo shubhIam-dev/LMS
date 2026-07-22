@@ -122,7 +122,7 @@ function StudentDashboard({ previewMode = false }) {
             <p className="dash-hero-subtitle">
               {isReadOnly
                 ? "Viewing student academic overview. No editing allowed."
-                : "Here&apos;s your academic overview for this semester."}
+                : "Here's your academic overview for this semester."}
             </p>
           </div>
           <div className="dash-hero-badge">

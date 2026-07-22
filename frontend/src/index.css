@@ -11,60 +11,67 @@
    grays gently tinted toward the primary hue so nothing clashes.
    ============================================================================ */
 :root {
-  /* ---- Primary (indigo) ramp ---- */
-  --primary-50:  #EEF0FF;
-  --primary-100: #E0E3FF;
-  --primary-200: #C6CBFF;
-  --primary-300: #A5ABFB;
-  --primary-400: #8087F5;
-  --primary-500: #635BFF;   /* brand */
-  --primary-600: #4F46E5;   /* buttons / active */
-  --primary-700: #4338CA;
-  --primary-800: #3730A3;
-  --primary-900: #272266;
+  /* ---- Primary (electric violet) ramp — kept saturated enough for white
+     button text to stay readable; the brighter neon tones live in --cyan/
+     --magenta below and are reserved for accents, borders and glows. ---- */
+  --primary-50:  rgba(140, 92, 255, 0.10);
+  --primary-100: rgba(140, 92, 255, 0.16);
+  --primary-200: rgba(140, 92, 255, 0.26);
+  --primary-300: #B39DFF;
+  --primary-400: #9B7CFF;
+  --primary-500: #7C5CFF;   /* brand */
+  --primary-600: #6C3CE9;   /* buttons / active */
+  --primary-700: #5B2FC7;
+  --primary-800: #4A26A3;
+  --primary-900: #2E1866;
 
   /* ---- Analogous violet (secondary accents / gradients) ---- */
   --violet-400: #A78BFA;
-  --violet-500: #8B5CF6;
+  --violet-500: #8B6BFF;
   --violet-600: #7C3AED;
 
-  /* ---- Complementary amber (highlights, CTA emphasis, "gold star") ---- */
+  /* ---- Neon accents — the "gaming HUD" hues, used for glows, borders,
+     small badges and text emphasis, never as large solid button fills. ---- */
+  --cyan:    #00E5FF;
+  --magenta: #FF2D95;
+  --lime:    #C6FF5C;
   --amber-400: #FBBF24;
   --amber-500: #F59E0B;
   --amber-600: #D97706;
-  --amber-soft: #FEF3C7;
+  --amber-soft: rgba(245, 158, 11, 0.16);
 
-  /* ---- Semantic ---- */
-  --success:      #16A34A;
-  --success-soft: #DCFCE7;
-  --warning:      #D97706;
-  --warning-soft: #FEF3C7;
-  --danger:       #DC2626;
-  --danger-soft:  #FEE2E2;
-  --info:         #0EA5E9;
-  --info-soft:    #E0F2FE;
+  /* ---- Semantic (translucent so they sit on a dark surface) ---- */
+  --success:      #22C55E;
+  --success-soft: rgba(34, 197, 94, 0.16);
+  --warning:      #F5A623;
+  --warning-soft: rgba(245, 166, 35, 0.16);
+  --danger:       #F43F5E;
+  --danger-soft:  rgba(244, 63, 94, 0.16);
+  --info:         #22D3EE;
+  --info-soft:    rgba(34, 211, 238, 0.16);
 
-  /* ---- Neutrals (cool, faintly indigo-tinted) ---- */
-  --bg:        #F4F5FB;   /* app background */
-  --surface:   #FFFFFF;   /* cards */
-  --surface-2: #FAFBFF;   /* subtle raised / hover */
-  --ink:       #1A1D2E;   /* headings */
-  --ink-2:     #3D4258;   /* body */
-  --muted:     #6B7194;   /* secondary text */
-  --muted-2:   #9AA0BE;   /* hints / placeholders */
-  --line:      #E6E8F2;   /* borders */
-  --line-2:    #EEF0F7;   /* faint dividers */
+  /* ---- Neutrals — twilight indigo, lighter than a pure-black "void" ---- */
+  --bg:        #14122E;   /* app background */
+  --surface:   #1D1A42;   /* cards */
+  --surface-2: #242150;   /* subtle raised / hover */
+  --ink:       #F1F1FA;   /* headings */
+  --ink-2:     #C9CADC;   /* body */
+  --muted:     #9294BE;   /* secondary text */
+  --muted-2:   #6C6E96;   /* hints / placeholders */
+  --line:      rgba(140, 92, 255, 0.22);   /* borders */
+  --line-2:    rgba(140, 92, 255, 0.12);   /* faint dividers */
 
-  /* Sidebar (deep indigo, near-black) */
-  --sidebar:      #201B3D;
-  --sidebar-2:    #2A2450;
-  --sidebar-line: rgba(255,255,255,0.08);
-  --sidebar-text: rgba(255,255,255,0.72);
-  --sidebar-mut:  rgba(255,255,255,0.45);
+  /* Sidebar (deeper void than the page background, for contrast) */
+  --sidebar:      #0C0A22;
+  --sidebar-2:    #14113A;
+  --sidebar-line: rgba(0, 229, 255, 0.14);
+  --sidebar-text: rgba(244, 245, 255, 0.75);
+  --sidebar-mut:  rgba(244, 245, 255, 0.42);
 
   /* ---- Typography ---- */
   --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
 
   /* ---- Radii ---- */
   --r-sm: 8px;
@@ -72,73 +79,69 @@
   --r-lg: 16px;
   --r-xl: 22px;
 
-  /* ---- Shadows (soft, layered, indigo-tinted) ---- */
-  --shadow-xs: 0 1px 2px rgba(32, 27, 61, 0.05);
-  --shadow-sm: 0 2px 8px rgba(32, 27, 61, 0.06);
-  --shadow:    0 6px 20px rgba(32, 27, 61, 0.08);
-  --shadow-md: 0 12px 32px rgba(32, 27, 61, 0.12);
-  --shadow-primary: 0 8px 20px rgba(79, 70, 229, 0.30);
+  /* ---- Shadows ---- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.4);
+  --shadow:    0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 14px 36px rgba(0, 0, 0, 0.5);
+  --shadow-primary: 0 10px 26px rgba(124, 92, 255, 0.35);
 
   /* ---- Layout ---- */
   --sidebar-width: 268px;
 
   /* ---- Compatibility aliases ----
      App.css references these shorter names throughout (login page, sidebar,
-     cards, tables, empty states, etc). They were never defined, so every
-     card background, radius, border, and button color that used them was
-     silently falling back to "transparent" / "0" / "currentcolor" — this
-     is why buttons had square corners, cards blended into the page, and
-     hover states looked broken. Mapped onto the real token ramp above. */
+     cards, tables, empty states, etc). Mapped onto the token ramp above. */
   --primary:      var(--primary-600);
   --primary-2:    var(--primary-700);
-  --accent:       var(--amber-500);
-  --accent-soft:  var(--amber-soft);
+  --accent:       var(--cyan);
+  --accent-soft:  rgba(0, 229, 255, 0.14);
   --radius:       var(--r);
   --card:         var(--surface);
   --paper:        var(--surface-2);
-  --paper-2:      #F0F1F8;
-  --line-strong:  #D1D5DB;
+  --paper-2:      #2A2660;
+  --line-strong:  rgba(140, 92, 255, 0.4);
   --on-dark:       #FFFFFF;
   --on-dark-fade:  rgba(255, 255, 255, 0.08);
   --on-dark-mute:  var(--sidebar-mut);
 }
 
 /* ============================================================================
-   DARK THEME — toggle via data-theme attribute on <html>
+   LIGHT THEME — toggle via data-theme="light" on <html>. The default (base
+   :root above) is the twilight-dark palette; this override is a genuine light
+   theme for users who explicitly switch. The sidebar stays dark in both
+   themes — a dark nav rail + light content area is a deliberate, common
+   pattern, and it's where the neon glow accents actually read well.
    ============================================================================ */
-:root[data-theme="dark"] {
-  --bg:        #0E0D1A;
-  --surface:   #181726;
-  --surface-2: #1F1E30;
-  --ink:       #E8E7F4;
-  --ink-2:     #C5C3D8;
-  --muted:     #8885A8;
-  --muted-2:   #66638A;
-  --line:      #2A2840;
-  --line-2:    #232238;
-  --line-strong: #3A3855;
+:root[data-theme="light"] {
+  --bg:        #F5F4FC;
+  --surface:   #FFFFFF;
+  --surface-2: #F1EFFA;
+  --ink:       #1A1830;
+  --ink-2:     #46435F;
+  --muted:     #726F94;
+  --muted-2:   #A8A5C4;
+  --line:      rgba(108, 60, 233, 0.14);
+  --line-2:    rgba(108, 60, 233, 0.08);
+  --line-strong: rgba(108, 60, 233, 0.25);
 
-  --sidebar:      #0B0A16;
-  --sidebar-2:    #141326;
-  --sidebar-line: rgba(255,255,255,0.06);
-  --sidebar-text: rgba(255,255,255,0.60);
-  --sidebar-mut:  rgba(255,255,255,0.35);
+  /* Sidebar intentionally unchanged — stays the dark void from base :root. */
 
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.5);
-  --shadow:    0 6px 20px rgba(0,0,0,0.55);
-  --shadow-md: 0 12px 32px rgba(0,0,0,0.6);
-  --shadow-primary: 0 8px 20px rgba(99, 91, 255, 0.25);
+  --shadow-xs: 0 1px 2px rgba(32, 27, 61, 0.05);
+  --shadow-sm: 0 2px 8px rgba(32, 27, 61, 0.06);
+  --shadow:    0 6px 20px rgba(32, 27, 61, 0.08);
+  --shadow-md: 0 12px 32px rgba(32, 27, 61, 0.12);
+  --shadow-primary: 0 8px 20px rgba(108, 60, 233, 0.25);
 
-  --primary-50:  #1E1A45;
-  --primary-100: #2A2560;
-  --primary-200: #3A3580;
+  --primary-50:  rgba(108, 60, 233, 0.06);
+  --primary-100: rgba(108, 60, 233, 0.10);
+  --primary-200: rgba(108, 60, 233, 0.18);
 
-  --paper:        #1C1B2E;
-  --paper-2:      #232242;
-  --on-dark:      #FFFFFF;
-  --on-dark-fade: rgba(255,255,255,0.06);
-  --on-dark-mute: var(--sidebar-mut);
+  --accent:      #0A8EFF;
+  --accent-soft: rgba(10, 142, 255, 0.12);
+
+  --paper:   var(--surface-2);
+  --paper-2: #E9E6F7;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
