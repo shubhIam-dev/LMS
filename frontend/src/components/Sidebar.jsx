@@ -24,7 +24,7 @@ function Sidebar() {
   const profilePath = isStaff ? "/profile/faculty" : "/profile/student";
 
   // ── Theme toggle ──
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
