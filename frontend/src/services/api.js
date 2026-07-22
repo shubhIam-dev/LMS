@@ -4,6 +4,7 @@
 
 import axios from "axios";
 
+
 const BASE_URL = "http://localhost:9000";
 const TOKEN_KEY = "token";
 
@@ -338,4 +339,4 @@ export const attendanceApi = {
       `/attendance/getStudentAttendance?studentId=${encodeURIComponent(studentId)}`
     ),
 };
-export { BASE_URL };
+export { BASE_URL, callApi };

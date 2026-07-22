@@ -1,0 +1,664 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   FACULTY SCORE MANAGEMENT — Styles for ScoreManagement & StudentScoreForm
+   Uses the existing LMS design system (CSS vars from index.css).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Course Selector ────────────────────────────────────────── */
+
+.fm-course-selector {
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r, 12px);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fm-course-selector label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted, #6b7194);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.fm-select {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r-sm, 8px);
+  background: var(--bg, #f4f5fb);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink, #1a1d2e);
+  transition: border-color 0.15s ease;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.fm-select:focus {
+  border-color: var(--primary-500, #635bff);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+/* ── Course Info Bar ────────────────────────────────────────── */
+
+.fm-course-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--surface-2, #fafbff);
+  border: 1px solid var(--line, #e6e8f2);
+  border-bottom: 0;
+  border-radius: var(--r, 12px) var(--r, 12px) 0 0;
+  font-size: 14px;
+}
+
+.fm-course-name {
+  font-weight: 700;
+  color: var(--ink, #1a1d2e);
+  font-family: var(--font-display, "Plus Jakarta Sans", sans-serif);
+}
+
+.fm-course-code {
+  padding: 2px 10px;
+  background: var(--primary-100, #e0e3ff);
+  color: var(--primary-700, #4338ca);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fm-course-meta {
+  color: var(--muted, #6b7194);
+  font-size: 13px;
+}
+
+.fm-student-count {
+  margin-left: auto;
+  color: var(--muted, #6b7194);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── Student Table ──────────────────────────────────────────── */
+
+.fm-student-table-wrapper {
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r, 12px);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.fm-table-responsive {
+  overflow-x: auto;
+}
+
+.fm-student-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.fm-student-table thead {
+  background: var(--surface-2, #fafbff);
+}
+
+.fm-student-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted, #6b7194);
+  border-bottom: 1px solid var(--line, #e6e8f2);
+}
+
+.fm-student-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-2, #eef0f7);
+  color: var(--ink-2, #3d4258);
+  vertical-align: middle;
+}
+
+.fm-student-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.fm-student-table tbody tr:hover {
+  background: var(--surface-2, #fafbff);
+}
+
+.fm-cell-index {
+  color: var(--muted-2, #9aa0be);
+  font-weight: 500;
+  width: 40px;
+}
+
+.fm-cell-name {
+  font-weight: 600;
+  color: var(--ink, #1a1d2e);
+}
+
+.fm-cell-gpa {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.fm-table-empty {
+  text-align: center;
+  padding: 40px 16px !important;
+  color: var(--muted, #6b7194);
+  font-style: italic;
+}
+
+/* ── Percentage Badges ──────────────────────────────────────── */
+
+.fm-pct-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.fm-pct-excellent {
+  background: var(--success-soft, #dcfce7);
+  color: var(--success, #16a34a);
+}
+
+.fm-pct-good {
+  background: var(--amber-soft, #fef3c7);
+  color: var(--amber-600, #d97706);
+}
+
+.fm-pct-poor {
+  background: var(--danger-soft, #fee2e2);
+  color: var(--danger, #dc2626);
+}
+
+/* ── Edit Button ────────────────────────────────────────────── */
+
+.fm-edit-btn {
+  padding: 7px 18px;
+  background: var(--primary-600, #4f46e5);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fm-edit-btn:hover {
+  background: var(--primary-700, #4338ca);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.fm-edit-btn:active {
+  transform: translateY(1px);
+}
+
+/* ── Loading / Error / Empty states ─────────────────────────── */
+
+.fm-loading {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--muted, #6b7194);
+  font-size: 15px;
+}
+
+.fm-error {
+  padding: 12px 18px;
+  background: var(--danger-soft, #fee2e2);
+  color: var(--danger, #dc2626);
+  border-radius: var(--r-sm, 8px);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.fm-success {
+  padding: 12px 18px;
+  background: var(--success-soft, #dcfce7);
+  color: var(--success, #16a34a);
+  border-radius: var(--r-sm, 8px);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.fm-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r, 12px);
+  margin-top: 20px;
+}
+
+.fm-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.fm-empty-state h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: var(--ink, #1a1d2e);
+}
+
+.fm-empty-state p {
+  color: var(--muted, #6b7194);
+  max-width: 400px;
+  margin: 0 auto;
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STUDENT SCORE FORM
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Back button ────────────────────────────────────────────── */
+
+.fm-form-header {
+  margin-bottom: 20px;
+}
+
+.fm-back-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r-sm, 8px);
+  color: var(--muted, #6b7194);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fm-back-btn:hover {
+  border-color: var(--primary-300, #a5abfb);
+  color: var(--primary-600, #4f46e5);
+  background: var(--primary-50, #eef0ff);
+}
+
+/* ── Student Info Card ──────────────────────────────────────── */
+
+.fm-student-info-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 28px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r, 12px);
+  margin-bottom: 20px;
+}
+
+.fm-student-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(140deg, var(--primary-500, #635bff), var(--violet-500, #8b5cf6));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display, "Plus Jakarta Sans", sans-serif);
+  font-size: 24px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.fm-student-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-student-details h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: var(--ink, #1a1d2e);
+}
+
+.fm-student-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fm-tag {
+  padding: 4px 12px;
+  background: var(--primary-50, #eef0ff);
+  color: var(--primary-700, #4338ca);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.fm-student-summary {
+  display: flex;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.fm-summary-item {
+  text-align: center;
+}
+
+.fm-summary-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #6b7194);
+  margin-bottom: 4px;
+}
+
+.fm-summary-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  font-family: var(--font-display, "Plus Jakarta Sans", sans-serif);
+  color: var(--ink, #1a1d2e);
+}
+
+/* ── Form Cards ─────────────────────────────────────────────── */
+
+.fm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.fm-card {
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r, 12px);
+  padding: 24px;
+}
+
+.fm-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.fm-card-header h3 {
+  font-size: 16px;
+  color: var(--ink, #1a1d2e);
+}
+
+.fm-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.fm-btn-secondary {
+  padding: 7px 16px;
+  background: transparent;
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r-sm, 8px);
+  color: var(--muted, #6b7194);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fm-btn-secondary:hover {
+  border-color: var(--primary-300, #a5abfb);
+  color: var(--primary-600, #4f46e5);
+}
+
+/* ── Components Table ───────────────────────────────────────── */
+
+.fm-components-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.fm-components-table thead {
+  background: var(--surface-2, #fafbff);
+}
+
+.fm-components-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted, #6b7194);
+  border-bottom: 1px solid var(--line, #e6e8f2);
+}
+
+.fm-components-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line-2, #eef0f7);
+  vertical-align: middle;
+}
+
+.fm-components-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.fm-components-table tbody tr:hover {
+  background: var(--surface-2, #fafbff);
+}
+
+.fm-cell-name {
+  font-weight: 600;
+  color: var(--ink, #1a1d2e);
+  white-space: nowrap;
+}
+
+/* ── Input fields in form ───────────────────────────────────── */
+
+.fm-input-sm {
+  width: 80px;
+  padding: 8px 10px;
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r-sm, 8px);
+  background: var(--bg, #f4f5fb);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink, #1a1d2e);
+  text-align: center;
+  transition: border-color 0.15s ease;
+}
+
+.fm-input-sm:focus {
+  border-color: var(--primary-500, #635bff);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+.fm-input-xs {
+  width: 60px;
+  padding: 8px 8px;
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r-sm, 8px);
+  background: var(--bg, #f4f5fb);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink, #1a1d2e);
+  text-align: center;
+  transition: border-color 0.15s ease;
+}
+
+.fm-input-xs:focus {
+  border-color: var(--primary-500, #635bff);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+.fm-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r-sm, 8px);
+  background: var(--bg, #f4f5fb);
+  font-size: 14px;
+  color: var(--ink, #1a1d2e);
+  transition: border-color 0.15s ease;
+}
+
+.fm-input:focus {
+  border-color: var(--primary-500, #635bff);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.12);
+}
+
+/* ── Attendance Grid ────────────────────────────────────────── */
+
+.fm-attendance-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.fm-att-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fm-att-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted, #6b7194);
+  letter-spacing: 0.02em;
+}
+
+.fm-att-result {
+  justify-content: center;
+}
+
+.fm-att-result .fm-pct-badge {
+  font-size: 18px;
+  padding: 8px 16px;
+  align-self: flex-start;
+}
+
+/* ── Summary Card ───────────────────────────────────────────── */
+
+.fm-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.fm-summary-box {
+  text-align: center;
+  padding: 16px;
+  background: var(--surface-2, #fafbff);
+  border: 1px solid var(--line, #e6e8f2);
+  border-radius: var(--r-sm, 8px);
+}
+
+.fm-summary-box-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #6b7194);
+  margin-bottom: 8px;
+}
+
+.fm-summary-box-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--font-display, "Plus Jakarta Sans", sans-serif);
+  color: var(--ink, #1a1d2e);
+}
+
+.fm-save-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line, #e6e8f2);
+}
+
+.fm-save-btn {
+  padding: 12px 32px;
+  background: var(--primary-600, #4f46e5);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm, 8px);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
+  letter-spacing: 0.02em;
+}
+
+.fm-save-btn:hover {
+  background: var(--primary-700, #4338ca);
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+}
+
+.fm-save-btn:active {
+  transform: translateY(1px);
+}
+
+.fm-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.fm-saving-hint {
+  font-size: 13px;
+  color: var(--muted, #6b7194);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .fm-course-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fm-student-info-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .fm-student-summary {
+    gap: 16px;
+  }
+
+  .fm-attendance-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fm-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fm-input-sm {
+    width: 60px;
+  }
+
+  .fm-input-xs {
+    width: 50px;
+  }
+}

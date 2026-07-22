@@ -403,7 +403,7 @@ function StudentDashboard({ previewMode = false }) {
               </span>
             </div>
           </Link>
-          <Link to={isReadOnly ? "#" : "/marks"} className="dash-link-card" onClick={isReadOnly ? (e) => e.preventDefault() : undefined}>
+          <Link to={isReadOnly ? "#" : "/score"} className="dash-link-card" onClick={isReadOnly ? (e) => e.preventDefault() : undefined}>
             <div className="dash-link-icon dash-link-icon--marks">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="8" r="6" />
@@ -411,7 +411,7 @@ function StudentDashboard({ previewMode = false }) {
               </svg>
             </div>
             <div className="dash-link-body">
-              <span className="dash-link-text">View Marks</span>
+              <span className="dash-link-text">Scorecard</span>
               <span className="dash-link-arrow">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
