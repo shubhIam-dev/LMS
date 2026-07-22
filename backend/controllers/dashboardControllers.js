@@ -73,12 +73,12 @@ async function getStudentDashboard(req, res) {
 
         // ── 5. Build helper maps ──
         const submittedSet = new Set(
-            submissions.map((s) => String(s.assignmentId))
+            submissions.map((s) => String(s.assignmentId?._id || s.assignmentId))
         );
         const gradedSet = new Set(
             submissions
                 .filter((s) => s.status === "graded")
-                .map((s) => String(s.assignmentId))
+                .map((s) => String(s.assignmentId?._id || s.assignmentId))
         );
 
         const now = new Date();

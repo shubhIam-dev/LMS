@@ -52,9 +52,19 @@ function getStudents(req, res) {
 }
 
 function addUsers(req, res) {
-    User.insertMany(req.body)
-        .then((data) => res.status(201).json({ msg: "Users registered successfully", count: data.length }))
-        .catch((err) => res.status(500).json({ msg: "Error registering users", error: err.message }))
+    User.create(req.body)
+        .then(function (users) {
+            res.status(201).json({
+                success: true,
+                data: users
+            });
+        })
+        .catch(function (error) {
+            res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        });
 }
 
 module.exports = { addUser, getUser, addUsers, getStudents }
