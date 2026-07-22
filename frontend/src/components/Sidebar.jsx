@@ -2,6 +2,7 @@
 // Reads the current user from Redux and dispatches logout().
 // Links dynamically adapt based on user role.
 
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectUser, selectRole, logout } from "../store/authSlice";
@@ -21,6 +22,18 @@ function Sidebar() {
   const isStaff = role === "teacher" || isAdmin;
   const dashboardPath = isAdmin ? "/dashboard/admin" : isStaff ? "/dashboard/faculty" : "/dashboard/student";
   const profilePath = isStaff ? "/profile/faculty" : "/profile/student";
+
+  // ── Theme toggle ──
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  }
 
   const navItems = [
     { path: dashboardPath, label: "Dashboard" },
@@ -72,6 +85,33 @@ function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
+        <button onClick={toggleTheme} className="theme-toggle-btn"
+          style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "10px 14px", borderRadius: "var(--radius)",
+            background: "transparent", border: "1px solid var(--on-dark-fade)",
+            color: "var(--on-dark-mute)", width: "100%",
+            fontSize: 13, fontWeight: 500, marginBottom: 8,
+            cursor: "pointer", transition: "all 0.15s ease",
+          }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+               strokeLinecap="round" strokeLinejoin="round" width="16" height="16"
+               style={{ flexShrink: 0 }}>
+            {theme === "dark" ? (
+              // Sun icon for dark mode → switch to light
+              <>
+                <circle cx="12" cy="12" r="5" />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </>
+            ) : (
+              // Moon icon for light mode → switch to dark
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            )}
+          </svg>
+          <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+        </button>
+
         <button onClick={() => dispatch(logout())} className="logout-btn">
           <span className="nav-label">Logout</span>
         </button>
