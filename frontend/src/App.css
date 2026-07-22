@@ -39,8 +39,6 @@
    LOGIN
    ============================================================================ */
 .login-page {
-  /* Gaming HUD is a deliberate single dark theme — a neon terminal doesn't
-     have a "light mode" reading, so no prefers-color-scheme branching here. */
   --void:    #06050F;
   --void-2:  #0B0A1E;
   --panel-x: rgba(16, 14, 34, 0.72);
@@ -60,6 +58,34 @@
   grid-template-columns: 1.05fr 1fr;
   background: var(--void);
   color: var(--hud-ink-2);
+}
+
+/* Light mode override for login page */
+:root[data-theme="light"] .login-page {
+  --void:    #E8E6F5;
+  --void-2:  #DCDAEE;
+  --panel-x: rgba(255, 255, 255, 0.78);
+  --cyan:    #0A8EFF;
+  --magenta: #D63875;
+  --violet-x: #6D4AFF;
+  --lime:    #4CB944;
+  --hud-line: rgba(100, 80, 180, 0.20);
+  --hud-ink:  #1A1833;
+  --hud-ink-2: #3F3C5C;
+  --hud-muted: #7A78A0;
+}
+:root[data-theme="dark"] .login-page {
+  --void:    #06050F;
+  --void-2:  #0B0A1E;
+  --panel-x: rgba(16, 14, 34, 0.72);
+  --cyan:    #00E5FF;
+  --magenta: #FF2D95;
+  --violet-x: #8C5CFF;
+  --lime:    #C6FF5C;
+  --hud-line: rgba(140, 92, 255, 0.28);
+  --hud-ink:  #F4F5FF;
+  --hud-ink-2: #C7C9E8;
+  --hud-muted: #8688B8;
 }
 
 /* ---- Left: holo-deck panel ---- */
@@ -212,6 +238,7 @@
 
 /* ---- Right: terminal card ---- */
 .login-container {
+  position: relative;
   align-self: center;
   justify-self: center;
   width: 100%;
@@ -220,7 +247,7 @@
   perspective: 1400px;
 }
 
-.tilt-wrap { width: 100%; transform-style: preserve-3d; }
+.tilt-wrap { width: 100%; }
 
 .login-card {
   position: relative;
@@ -229,15 +256,11 @@
   border: 1px solid var(--hud-line);
   clip-path: polygon(0 16px, 16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
   padding: 42px 38px 34px;
-  transform-style: preserve-3d;
   box-shadow: 0 0 0 1px rgba(0,229,255,0.06), 0 30px 70px -20px rgba(0,0,0,0.7);
   transition: transform 0.12s ease-out;
   will-change: transform;
-  overflow: hidden;
 }
-.login-card > * { transform: translateZ(20px); position: relative; }
-.login-card .login-btn { transform: translateZ(38px); }
-.login-card .login-badge { transform: translateZ(30px); }
+.login-card > * { position: relative; }
 
 .card-sweep {
   position: absolute; top: 0; left: -60%; width: 40%; height: 100%;

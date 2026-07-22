@@ -1,3 +1,9 @@
+// Initialize theme from localStorage BEFORE React hydration to prevent flash
+(function () {
+  const saved = localStorage.getItem("theme") || "light";
+  document.documentElement.setAttribute("data-theme", saved);
+})();
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'

@@ -103,6 +103,44 @@
   --on-dark-mute:  var(--sidebar-mut);
 }
 
+/* ============================================================================
+   DARK THEME — toggle via data-theme attribute on <html>
+   ============================================================================ */
+:root[data-theme="dark"] {
+  --bg:        #0E0D1A;
+  --surface:   #181726;
+  --surface-2: #1F1E30;
+  --ink:       #E8E7F4;
+  --ink-2:     #C5C3D8;
+  --muted:     #8885A8;
+  --muted-2:   #66638A;
+  --line:      #2A2840;
+  --line-2:    #232238;
+  --line-strong: #3A3855;
+
+  --sidebar:      #0B0A16;
+  --sidebar-2:    #141326;
+  --sidebar-line: rgba(255,255,255,0.06);
+  --sidebar-text: rgba(255,255,255,0.60);
+  --sidebar-mut:  rgba(255,255,255,0.35);
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.5);
+  --shadow:    0 6px 20px rgba(0,0,0,0.55);
+  --shadow-md: 0 12px 32px rgba(0,0,0,0.6);
+  --shadow-primary: 0 8px 20px rgba(99, 91, 255, 0.25);
+
+  --primary-50:  #1E1A45;
+  --primary-100: #2A2560;
+  --primary-200: #3A3580;
+
+  --paper:        #1C1B2E;
+  --paper-2:      #232242;
+  --on-dark:      #FFFFFF;
+  --on-dark-fade: rgba(255,255,255,0.06);
+  --on-dark-mute: var(--sidebar-mut);
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
