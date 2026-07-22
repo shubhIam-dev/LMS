@@ -21,7 +21,7 @@ router.post('/addUsers', authenticate, authorize("superadmin"), addUsers);
 router.get('/students', authenticate, authorize("teacher", "superadmin"), getStudents);
 
 // ---- Legacy (kept for backwards-compat with older docs/scripts) ----
-router.post('/addUser', addUser);
+router.post('/addUser',authenticate,authorize("superadmin") ,addUser);
 router.get('/getUser', getUser);
 
 module.exports = router;

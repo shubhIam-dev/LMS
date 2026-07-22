@@ -112,7 +112,7 @@ function updateProfile(req, res) {
 
     let updateUser = Promise.resolve();
     if (Object.keys(userUpdate).length > 0) {
-        updateUser = User.findByIdAndUpdate(userId, userUpdate, { new: true, runValidators: true }).then(() => {});
+        updateUser = User.findByIdAndUpdate(userId, userUpdate, { new: true, runValidators: true }).then(() => { });
     }
 
     updateUser
@@ -183,7 +183,8 @@ function changePassword(req, res) {
     User.findById(userId)
         .then(user => {
             if (!user) return res.status(404).json({ msg: "User not found." });
-            if (user.password !== currentPassword) {
+            const isMatch = user.comparePassword(currentPassword);
+            if (!isMatch) {
                 return res.status(400).json({ msg: "Current password is incorrect." });
             }
             user.password = newPassword;
