@@ -185,6 +185,9 @@ export const dashboardApi = {
 
   /** GET /faculty/students → students assigned to this faculty */
   getFacultyStudents: () => api.get("/faculty/students"),
+
+  /** GET /dashboard/admin → system-wide admin stats */
+  getAdminDashboard: () => api.get("/dashboard/admin"),
 };
 
 // ── COURSES ────────────────────────────────────────────────────────────────

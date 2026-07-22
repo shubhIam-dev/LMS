@@ -39,166 +39,267 @@
    LOGIN
    ============================================================================ */
 .login-page {
+  --panel-a: #2A2166;
+  --panel-b: #4338CA;
+  --panel-c: #7C3AED;
+  --field-bg: var(--bg);
+  --field-border: var(--line-strong);
+
   min-height: 100vh;
   width: 100%;
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
+  grid-template-columns: 1.05fr 1fr;
   background: var(--bg);
 }
 
-/* Left brand panel — indigo→violet gradient with a soft pattern */
-.login-page::before {
-  content: "College ERP Portal";
-  grid-column: 1;
+@media (prefers-color-scheme: dark) {
+  .login-page {
+    --field-bg: var(--paper);
+    --field-border: var(--line);
+    --panel-a: #0F0D24;
+    --panel-b: #241D5C;
+    --panel-c: #4C2E9E;
+  }
+}
+:root[data-theme="dark"] .login-page {
+  --field-bg: var(--paper);
+  --field-border: var(--line);
+  --panel-a: #0F0D24;
+  --panel-b: #241D5C;
+  --panel-c: #4C2E9E;
+}
+:root[data-theme="light"] .login-page {
+  --field-bg: var(--bg);
+  --field-border: var(--line-strong);
+  --panel-a: #2A2166;
+  --panel-b: #4338CA;
+  --panel-c: #7C3AED;
+}
+
+/* Left brand panel — indigo→violet gradient with a grain layer and a
+   feature strip; everything here is real markup now (was ::before/::after
+   generated content, which can't carry icons). */
+.login-panel {
+  position: relative;
+  overflow: hidden;
   display: flex;
-  align-items: flex-end;
-  padding: 64px 6vw;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(34px, 4vw, 58px);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  color: #fff;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 56px clamp(32px, 5vw, 72px);
   background:
-    radial-gradient(circle at 78% 18%, rgba(255,255,255,0.16) 0, transparent 40%),
-    radial-gradient(circle at 15% 85%, rgba(245,158,11,0.28) 0, transparent 45%),
-    linear-gradient(150deg, var(--primary-700) 0%, var(--violet-600) 100%);
+    radial-gradient(60% 55% at 82% 12%, rgba(251, 191, 36, 0.16), transparent 60%),
+    radial-gradient(70% 60% at 8% 92%, var(--panel-c) 0%, transparent 55%),
+    linear-gradient(155deg, var(--panel-b) 0%, var(--panel-a) 100%);
 }
-
-.login-container {
-  grid-column: 2;
-  align-self: center;
-  justify-self: center;
-  width: 100%;
-  max-width: 400px;
-  padding: 48px 40px;
-  background: transparent;
-}
-
-.login-page::after {
-  content: "An almanac of everything you're learning — courses, marks, and the small print in between.";
+.login-panel::before {
+  content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(50% - 20px);
-  height: 100%;
-  padding: 64px 8vw;
+  inset: 0;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.login-panel::after {
+  content: "";
+  position: absolute;
+  width: 480px; height: 480px;
+  border-radius: 50%;
+  right: -160px; top: -160px;
+  background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%);
+  animation: login-panel-drift 16s ease-in-out infinite;
+}
+@keyframes login-panel-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-24px, 28px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-panel::after { animation: none; }
+}
+
+.panel-mark {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+.panel-mark svg { width: 24px; height: 24px; }
+.panel-mark span {
   font-family: var(--font-display);
-  font-variation-settings: 'opsz' 96, 'SOFT' 60, 'WONK' 1;
-  font-size: clamp(28px, 3.4vw, 46px);
-  line-height: 1.1;
-  color: var(--ink);
-  letter-spacing: -0.015em;
-  border-right: 1px solid var(--line);
-  z-index: 1;
-  font-weight: 400;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: #fff;
 }
 
-.login-header { text-align: left; margin-bottom: 36px; }
+.panel-copy { position: relative; z-index: 1; max-width: 480px; }
 
-.login-header h1 {
-  font-family: var(--font-display);
-  font-variation-settings: 'opsz' 96, 'SOFT' 50, 'WONK' 0;
-  font-weight: 500;
-  font-size: 46px;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  margin-bottom: 12px;
-  color: var(--ink);
-}
-.login-header h1::first-letter { font-style: italic; color: var(--primary); }
-
-.login-header p {
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.5;
-  max-width: 300px;
-}
-.login-icon::before {
-  content: "";
-  width: 18px;
-  height: 2px;
-  background: var(--accent);
-}
-.login-icon::after { content: "College Registry · v2"; }
-
-/* Graduation-cap badge */
-.login-icon {
+.panel-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-sans);
   font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 22px;
+}
+.panel-eyebrow::before { content: ""; width: 18px; height: 2px; background: var(--accent); }
+
+.panel-copy h2 {
+  font-family: var(--font-display);
   font-weight: 500;
+  font-size: clamp(30px, 3.4vw, 44px);
+  line-height: 1.14;
+  letter-spacing: -0.015em;
+  color: #fff;
+  margin: 0 0 18px;
+}
+.panel-copy h2 em { font-style: normal; color: var(--accent); }
+.panel-copy p {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.62);
+  max-width: 380px;
+}
+
+.feature-strip {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 28px;
+  padding-top: 28px;
+  margin-top: 28px;
+  border-top: 1px solid rgba(255,255,255,0.14);
+}
+.feature { display: flex; align-items: center; gap: 10px; }
+.feature-icon {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.14);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.feature-icon svg { width: 15px; height: 15px; color: #fff; }
+.feature span { font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,0.78); }
+
+.login-container {
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  max-width: 440px;
+  padding: 40px;
+}
+
+.login-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-md);
+  padding: 44px 40px 36px;
+}
+
+.login-header { text-align: left; margin-bottom: 30px; }
+
+.login-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: 20px;
 }
-.login-icon::before {
-  content: "";
-  width: 18px;
-  height: 2px;
-  background: var(--accent);
+.login-badge::before { content: ""; width: 16px; height: 2px; background: var(--accent); }
+
+.login-header h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 27px;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  color: var(--ink);
 }
-.login-icon::after { content: "College Registry · v2"; }
+
+.login-header p {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
 
 .login-form { display: flex; flex-direction: column; gap: 18px; }
 
-.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
 
 .form-group label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.form-group input {
-  padding: 12px 0;
+.field-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--field-border);
+  border-radius: var(--r-sm);
+  padding: 0 14px;
+  background: var(--field-bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.field-input svg { width: 16px; height: 16px; color: var(--muted-2); flex-shrink: 0; }
+.field-input input {
   border: 0;
-  border-bottom: 1px solid var(--line-strong);
   background: transparent;
-  font-size: 15px;
+  padding: 12px 0;
+  font-size: 14.5px;
   color: var(--ink);
-  transition: border-color 0.15s ease;
+  width: 100%;
   border-radius: 0;
 }
-.form-group input::placeholder { color: var(--muted-2); }
-.form-group input:focus { border-bottom-color: var(--primary); }
-.form-group input:disabled { opacity: 0.55; cursor: not-allowed; }
+.field-input input::placeholder { color: var(--muted-2); }
+.field-input:focus-within {
+  border-color: var(--primary);
+  background: var(--card);
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.16);
+}
+.field-input:focus-within svg { color: var(--primary); }
+.field-input:has(input:disabled) { opacity: 0.55; }
 
 .login-btn {
-  margin-top: 12px;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 14px 20px;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--violet-600));
   color: #FFFFFF;
-  border: 1px solid var(--primary);
+  border: 0;
   border-radius: var(--radius);
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
-  box-shadow: 0 1px 0 rgba(12, 24, 48, 0.12);
+  transition: box-shadow 0.15s ease, transform 0.08s ease;
+  box-shadow: 0 10px 24px -8px rgba(79, 70, 229, 0.55);
 }
-.login-btn:hover {
-  background: var(--primary-2);
-  border-color: var(--primary-2);
-  box-shadow: 0 4px 14px rgba(30, 75, 216, 0.28);
-}
-.login-btn:active { transform: translateY(1px); box-shadow: none; }
+.login-btn svg { width: 15px; height: 15px; transition: transform 0.15s ease; }
+.login-btn:hover { box-shadow: 0 14px 30px -8px rgba(79, 70, 229, 0.65); }
+.login-btn:hover svg { transform: translateX(3px); }
+.login-btn:active { transform: translateY(1px); }
 .login-btn:disabled {
   opacity: 0.55; cursor: not-allowed;
-  background: var(--muted); border-color: var(--muted); box-shadow: none;
+  background: var(--muted); box-shadow: none;
 }
-.login-btn:hover { background: var(--primary-700); box-shadow: 0 10px 26px rgba(79,70,229,0.38); }
-.login-btn:active { transform: translateY(1px); }
-.login-btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+.login-btn:disabled svg { transform: none; }
 
 .login-footer {
   margin-top: 28px;
@@ -3981,9 +4082,11 @@
   .app-layout.has-sidebar .main-content { margin-left: 0; }
 
   .login-page { grid-template-columns: 1fr; }
-  .login-page::after { display: none; }
-  .login-container { grid-column: 1; padding: 40px 28px; max-width: 460px; }
-  .login-header h1 { font-size: 36px; }
+  .login-panel { min-height: 240px; padding: 36px 28px; }
+  .feature-strip { display: none; }
+  .login-container { padding: 32px 24px; max-width: 460px; }
+  .login-card { padding: 32px 24px 28px; }
+  .login-header h1 { font-size: 24px; }
 
   .page-content { padding: 28px 20px 60px; }
   .page-header { flex-direction: column; align-items: flex-start; }

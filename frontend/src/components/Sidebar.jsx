@@ -17,8 +17,9 @@ function Sidebar() {
   const role = useSelector(selectRole);
   const dispatch = useDispatch();
 
-  const isStaff = role === "teacher" || role === "superadmin";
-  const dashboardPath = isStaff ? "/dashboard/faculty" : "/dashboard/student";
+  const isAdmin = role === "superadmin";
+  const isStaff = role === "teacher" || isAdmin;
+  const dashboardPath = isAdmin ? "/dashboard/admin" : isStaff ? "/dashboard/faculty" : "/dashboard/student";
   const profilePath = isStaff ? "/profile/faculty" : "/profile/student";
 
   const navItems = [
@@ -31,6 +32,8 @@ function Sidebar() {
     { path: "/attendance", label: "Attendance" },
     // Teachers and superadmins get the create/manage console.
     ...(isStaff ? [{ path: "/manage", label: "Teacher Console" }] : []),
+    // Superadmins get admin-only links
+    ...(isAdmin ? [{ path: "/dashboard/admin", label: "Admin Dashboard" }] : []),
   ];
 
   return (
