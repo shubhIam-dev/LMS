@@ -1,7 +1,7 @@
-let Course=require("../models/Courses.model.js")
-let User=require("../models/User.model.js")
+let Course = require("../models/Courses.model.js")
+let User = require("../models/User.model.js")
 
-function addCourse(req,res){
+function addCourse(req, res) {
     const { CourseName, CourseCode } = req.body
     if (!CourseName || !CourseCode) {
         return res.status(400).json({ msg: "CourseName and CourseCode are required" })
@@ -16,30 +16,65 @@ function addCourse(req,res){
         .catch((err) => res.status(500).json({ msg: "Error creating course", error: err.message }))
 }
 
-function updateCourseById(req,res){
+function updateCourseById(req, res) {
     const { _id } = req.body
     if (!_id) return res.status(400).json({ msg: "_id is required" })
 
-    // Build update object from allowed fields (ignore _id and any other non-schema fields)
-    const allowed = ["CourseName","CourseCode","credits","semester","description","instructor"];
+    // Teacher ownership check
+    if (req.user.role === "teacher") {
+        return Course.findById(_id)
+            .then((course) => {
+                if (!course) return res.status(404).json({ msg: "Course not found" });
+                if (String(course.instructor) !== req.user.id) {
+                    return res.status(403).json({ msg: "You can only update your own courses" });
+                }
+                // Proceed with update
+                const allowed = ["CourseName", "CourseCode", "credits", "semester", "description", "instructor"];
+                const update = {};
+                for (const field of allowed) {
+                    if (req.body[field] !== undefined) update[field] = req.body[field];
+                }
+                return Course.findByIdAndUpdate(_id, update, { new: true, runValidators: true })
+                    .then((course) => {
+                        if (!course) return res.status(404).json({ msg: "Course not found" });
+                        res.json({ msg: "Course updated", course });
+                    });
+            })
+            .catch((err) => res.status(500).json({ msg: "Error updating course", error: err.message }));
+    }
+
+    // Superadmin: no check
+    const allowed = ["CourseName", "CourseCode", "credits", "semester", "description", "instructor"];
     const update = {};
     for (const field of allowed) {
-      if (req.body[field] !== undefined) update[field] = req.body[field];
+        if (req.body[field] !== undefined) update[field] = req.body[field];
     }
 
     Course.findByIdAndUpdate(_id, update, { new: true, runValidators: true })
         .then((course) => {
-          if (!course) return res.status(404).json({ msg: "Course not found" });
-          res.json({ msg: "Course updated", course });
+            if (!course) return res.status(404).json({ msg: "Course not found" });
+            res.json({ msg: "Course updated", course });
         })
         .catch((err) => res.status(500).json({ msg: "Error updating course", error: err.message }))
 }
 
-function deleteCourse(req,res){
-    // id can arrive in the body (POST) or the query string (GET) — accept both.
-    // Optional chaining guards against req.body being undefined on a GET.
+function deleteCourse(req, res) {
     const _id = req.body?._id || req.query?._id
     if (!_id) return res.status(400).json({ msg: "_id is required" })
+
+    // Teacher ownership check
+    if (req.user.role === "teacher") {
+        return Course.findById(_id)
+            .then((course) => {
+                if (!course) return res.status(404).json({ msg: "Course not found" });
+                if (String(course.instructor) !== req.user.id) {
+                    return res.status(403).json({ msg: "You can only delete your own courses" });
+                }
+                return Course.deleteOne({ _id })
+                    .then((data) => res.json({ msg: "Course deleted", data }));
+            })
+            .catch((err) => res.status(500).json({ msg: "Error deleting course", error: err.message }));
+    }
 
     Course.deleteOne({ _id })
         .then((data) => res.json({ msg: "Course deleted", data }))
@@ -52,22 +87,26 @@ function addCourses(req, res) {
         .catch((err) => res.status(500).json({ msg: "Error adding courses", error: err.message }))
 }
 
-function getCourseById(req,res){
-    // GET request → read the id from the query string, not the body.
-    // Optional chaining guards against req.body being undefined on a GET.
+function getCourseById(req, res) {
     const _id = req.query?._id || req.body?._id
     if (!_id) return res.status(400).json({ msg: "_id is required" })
 
-    // findById takes the id value directly, NOT an object.
-    Course.findById(_id)
+    let filter = { _id };
+    if (req.user.role === "teacher") {
+        filter.instructor = req.user.id;
+    }
+    Course.findOne(filter)
         .populate("instructor", "name")
-        .populate("enrolledStudents", "name email")
         .then((data) => data ? res.json(data) : res.status(404).json({ msg: "Course not found" }))
         .catch((err) => res.status(500).json({ msg: "Error fetching course", error: err.message }))
 }
 
-function getAllCourses(req,res){
-    Course.find()
+function getAllCourses(req, res) {
+    let filter = {};
+    if (req.user.role === "teacher") {
+        filter = { instructor: req.user.id };
+    }
+    Course.find(filter)
         .populate("instructor", "name")
         .then((data) => res.json(data))
         .catch((err) => res.status(500).json({ msg: "Error fetching courses", error: err.message }))
@@ -78,7 +117,7 @@ function getAllCourses(req,res){
 // A teacher enrolls a student in a course. This is a many-to-many link, so
 // we update BOTH sides: the student appears in course.enrolledStudents AND
 // the course appears in user.enrolledCourses. $addToSet prevents duplicates.
-function enrollStudent(req,res){
+function enrollStudent(req, res) {
     const { courseId, studentId } = req.body;
     if (!courseId || !studentId) {
         return res.status(400).json({ msg: "courseId and studentId are required" });
@@ -87,6 +126,10 @@ function enrollStudent(req,res){
     Course.findById(courseId)
         .then((course) => {
             if (!course) return Promise.reject({ status: 404, msg: "Course not found" });
+            // Teacher ownership check
+            if (req.user.role === "teacher" && String(course.instructor) !== req.user.id) {
+                return Promise.reject({ status: 403, msg: "You can only enroll students in your own courses" });
+            }
             return User.findById(studentId);
         })
         .then((student) => {
@@ -107,7 +150,7 @@ function enrollStudent(req,res){
 
 // GET /course/getStudents?courseId=...   (staff only)
 // The roster: every student enrolled in one course, with names/emails filled in.
-function getCourseStudents(req,res){
+function getCourseStudents(req, res) {
     const { courseId } = req.query;
     if (!courseId) return res.status(400).json({ msg: "courseId is required" });
 
@@ -115,6 +158,10 @@ function getCourseStudents(req,res){
         .populate("enrolledStudents", "name email phoneNumber")
         .then((course) => {
             if (!course) return res.status(404).json({ msg: "Course not found" });
+            // Teacher ownership check
+            if (req.user.role === "teacher" && String(course.instructor) !== req.user.id) {
+                return res.status(403).json({ msg: "You can only view students in your own courses" });
+            }
             res.json({ courseId: course._id, CourseName: course.CourseName, students: course.enrolledStudents });
         })
         .catch((err) => res.status(500).json({ msg: "Error fetching roster", error: err.message }));
@@ -124,7 +171,7 @@ function getCourseStudents(req,res){
 // Body: { courseId }
 // A student enrolls THEMSELVES in a course (same logic as enrollStudent but
 // reads the student ID from the authenticated token instead of the body).
-function selfEnroll(req,res){
+function selfEnroll(req, res) {
     const { courseId } = req.body;
     const studentId = req.user.id;   // from JWT token — must be a student
     if (!courseId) {
@@ -156,7 +203,7 @@ function selfEnroll(req,res){
 // GET /course/progress?courseId=...&studentId=...
 // Returns how many assignments in this course the student has completed,
 // total marks, and pending assignments. Requires both params.
-function getCourseProgress(req,res){
+function getCourseProgress(req, res) {
     const { courseId, studentId } = req.query;
     if (!courseId || !studentId) {
         return res.status(400).json({ msg: "courseId and studentId are required" });
@@ -189,5 +236,5 @@ function getCourseProgress(req,res){
         .catch((err) => res.status(500).json({ msg: "Error fetching progress", error: err.message }));
 }
 
-module.exports={addCourse,updateCourseById,deleteCourse,addCourses,getCourseById,getAllCourses,enrollStudent,getCourseStudents,selfEnroll,getCourseProgress}
+module.exports = { addCourse, updateCourseById, deleteCourse, addCourses, getCourseById, getAllCourses, enrollStudent, getCourseStudents, selfEnroll, getCourseProgress }
 
