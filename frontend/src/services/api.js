@@ -338,4 +338,4 @@ export const attendanceApi = {
       `/attendance/getStudentAttendance?studentId=${encodeURIComponent(studentId)}`
     ),
 };
-export { BASE_URL };
+export { BASE_URL, callApi };

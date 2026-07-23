@@ -40,7 +40,10 @@ function Sidebar() {
     { path: "/courses", label: "Courses" },
     { path: "/assignments", label: "Assignments" },
     { path: "/calendar", label: "Calendar" },
-    { path: "/marks", label: "Marks" },
+    ...(isStaff
+      ? [{ path: "/faculty/scores", label: "Score Management" }]
+      : [{ path: "/score", label: "Scorecard" }]
+    ),
     { path: profilePath, label: "Profile" },
     { path: "/attendance", label: "Attendance" },
     // Teachers and superadmins get the create/manage console.
