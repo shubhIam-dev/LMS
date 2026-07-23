@@ -7,7 +7,7 @@ const BASE = "/score";
 
 async function callScore(endpoint, options = {}) {
   const token = localStorage.getItem("token");
-  const BASE_URL = "http://localhost:9000";
+  const BASE_URL = "https://lms-591n.vercel.app";
 
   const res = await fetch(`${BASE_URL}${BASE}${endpoint}`, {
     headers: {
