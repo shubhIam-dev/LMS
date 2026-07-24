@@ -272,7 +272,7 @@ function StudentScoreForm() {
 
                   return (
                     <tr key={comp.componentName}>
-                      <td className="fm-cell-name">{comp.componentName}</td>
+                      <td className="fm-comp-cell-name">{comp.componentName}</td>
                       <td>
                         <input
                           type="number"
