@@ -4986,3 +4986,707 @@
   .progress-stats { gap: 12px; }
   .stat-box { min-width: 100px; flex: 1; }
 }
+
+
+/* ============================================================================
+   RESPONSIVE — Hamburger / Mobile Menu Styles
+   ============================================================================ */
+
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 50;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--sidebar, #0C0A22);
+  border: 1px solid var(--sidebar-line, rgba(0,229,255,0.14));
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 6px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+.mobile-menu-toggle:hover {
+  border-color: var(--accent, #00E5FF);
+  background: var(--sidebar-2, #14113A);
+}
+.mobile-menu-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--sidebar-text, rgba(244,245,255,0.75));
+  border-radius: 2px;
+  transition: all 0.25s ease;
+  transform-origin: center;
+}
+.mobile-menu-toggle.open span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.mobile-menu-toggle.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.mobile-menu-toggle.open span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 35;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+/* ============================================================================
+   RESPONSIVE — Breakpoint: Tablet & Below (< 1024px)
+   ============================================================================ */
+@media (max-width: 1024px) {
+  /* ── Layout ── */
+  .app-layout.has-sidebar .main-content {
+    margin-left: 0;
+  }
+  .app-layout.has-sidebar .main-content {
+    padding-top: 56px; /* space for the hamburger */
+  }
+
+  /* ── Sidebar slides in from left ── */
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 45;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+  }
+  .sidebar.sidebar--open {
+    transform: translateX(0);
+  }
+
+  /* ── Hamburger + Backdrop visible ── */
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  .sidebar-backdrop {
+    display: block;
+  }
+
+  /* ── Login Page ── */
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+  .login-panel {
+    display: none;  /* hide the HUD panel on tablet/mobile */
+  }
+  .login-container {
+    max-width: 100%;
+    padding: 32px 20px;
+  }
+  .login-card {
+    clip-path: none;
+    border-radius: var(--r-lg);
+    padding: 36px 28px 28px;
+  }
+  .login-card > .login-theme-toggle {
+    top: 12px;
+    right: 12px;
+  }
+
+  /* ── Page Scaffold ── */
+  .page-content {
+    padding: 32px 24px 60px;
+  }
+  .page-header h1 {
+    font-size: 36px;
+  }
+  .welcome-section h1 {
+    font-size: 36px;
+  }
+
+  /* ── Dashboard (old) ── */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stat-card:nth-child(2) {
+    border-right: none;
+  }
+  .stat-info h3 {
+    font-size: 40px;
+  }
+  .links-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* ── Dashboard (new) ── */
+  .dashboard-page {
+    padding: 24px 20px 60px;
+  }
+  .dash-hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 28px 24px;
+  }
+  .dash-hero-greeting {
+    font-size: 30px;
+  }
+  .dash-hero-badge {
+    align-items: flex-start;
+  }
+  .dash-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .dash-cards-section {
+    grid-template-columns: 1fr;
+  }
+  .dash-links-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* ── Assignments ── */
+  .assignment-card {
+    grid-template-columns: 44px 1fr;
+    gap: 16px;
+    padding: 20px 18px;
+  }
+  .assignment-questions-count {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0 0;
+    border-left: none;
+    border-top: 1px solid var(--line);
+    margin-top: 4px;
+    min-width: 0;
+  }
+  .count-number {
+    font-size: 22px;
+  }
+  .assignment-info h3 {
+    font-size: 20px;
+  }
+
+  /* ── Marks ── */
+  .performance-summary {
+    grid-template-columns: 1fr;
+  }
+  .summary-card {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .summary-card:last-child {
+    border-bottom: none;
+  }
+
+  /* ── Profile ── */
+  .profile-page {
+    padding: 28px 20px 60px;
+  }
+  .profile-page .page-header h1 {
+    font-size: 36px;
+  }
+  .profile-page .profile-layout {
+    grid-template-columns: 1fr;
+  }
+  .profile-page .profile-side-card {
+    position: static;
+  }
+  .profile-page .info-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-page .info-grid.two-col {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Calendar ── */
+  .calendar-page {
+    padding: 24px 16px 60px;
+  }
+  .cal-page-layout {
+    flex-direction: column;
+  }
+  .cal-page-sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+  .cal-toolbar {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cal-toolbar-center {
+    order: -1;
+    width: 100%;
+  }
+  .cal-toolbar-left,
+  .cal-toolbar-right {
+    width: 100%;
+    justify-content: center;
+  }
+  .cal-view-switcher {
+    width: 100%;
+  }
+  .cal-view-switcher button {
+    flex: 1;
+  }
+  .cal-search-wrapper {
+    width: 100%;
+  }
+  .cal-search-wrapper input {
+    width: 100%;
+  }
+  .cal-filter-select {
+    min-width: 0;
+    flex: 1;
+  }
+
+  /* ── Manage (Teacher Console) ── */
+  .console-grid {
+    grid-template-columns: 1fr;
+  }
+  .console-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px;
+  }
+  .console-tab {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+  .field-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .filter-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .question-picker {
+    max-height: 240px;
+  }
+  .grade-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .console-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .question-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .question-row .q-tags {
+    flex-wrap: wrap;
+  }
+
+  /* ── Course Detail ── */
+  .course-detail {
+    padding: 24px 20px;
+  }
+  .course-detail-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── Faculty Dash / Score ── */
+  .fm-stats-grid,
+  .faculty-dash-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+/* ============================================================================
+   RESPONSIVE — Breakpoint: Mobile (< 768px)
+   ============================================================================ */
+@media (max-width: 768px) {
+  /* ── Page Scaffold ── */
+  .page-content {
+    padding: 20px 16px 40px;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .page-header h1 {
+    font-size: 28px;
+  }
+  .page-header p {
+    text-align: left;
+    max-width: 100%;
+  }
+  .welcome-section h1 {
+    font-size: 28px;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar-header h2 {
+    font-size: 16px;
+  }
+  .sidebar-nav::before {
+    font-size: 9px;
+    padding: 6px 12px 4px;
+  }
+  .nav-link {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  /* ── Login ── */
+  .login-card {
+    padding: 28px 20px 24px;
+  }
+  .login-header h1 {
+    font-size: 22px;
+  }
+  .login-btn {
+    font-size: 11.5px;
+    padding: 12px 16px;
+  }
+  .login-badge {
+    font-size: 9px;
+    padding-right: 28px;
+  }
+  .field-input input {
+    font-size: 13px;
+    padding: 10px 0;
+  }
+
+  /* ── Dashboard (old) ── */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stat-card {
+    padding: 20px 18px;
+  }
+  .stat-card:nth-child(2) {
+    border-right: none;
+  }
+  .stat-card:nth-child(1),
+  .stat-card:nth-child(2) {
+    border-bottom: 1px solid var(--line);
+  }
+  .stat-info h3 {
+    font-size: 32px;
+  }
+  .links-grid {
+    grid-template-columns: 1fr;
+  }
+  .quick-link-card {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .quick-link-card:last-child {
+    border-bottom: none;
+  }
+  .link-text {
+    font-size: 18px;
+  }
+
+  /* ── Dashboard (new) ── */
+  .dash-hero-greeting {
+    font-size: 24px;
+  }
+  .dash-hero-content {
+    padding: 22px 18px;
+  }
+  .dash-stats-grid {
+    gap: 12px;
+  }
+  .dash-stat-card {
+    padding: 18px;
+    gap: 14px;
+  }
+  .dash-links-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .dash-link-card {
+    padding: 16px 18px;
+  }
+  .dash-cards-section {
+    gap: 16px;
+  }
+  .dash-insights-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* ── Courses ── */
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+  .course-card {
+    padding: 20px;
+  }
+  .course-details h3 {
+    font-size: 20px;
+  }
+
+  /* ── Assignments ── */
+  .assignment-card {
+    padding: 16px;
+    gap: 12px;
+  }
+  .assignment-info h3 {
+    font-size: 18px;
+  }
+  .assignment-type-indicator {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  /* ── Marks ── */
+  .summary-card {
+    padding: 24px 18px;
+  }
+  .marks-table th,
+  .marks-table td {
+    padding: 12px 14px;
+  }
+  .course-name-cell {
+    font-size: 16px;
+  }
+  .marks-cell {
+    font-size: 18px;
+  }
+
+  /* ── Profile ── */
+  .profile-page .page-header h1 {
+    font-size: 28px;
+  }
+  .profile-page .profile-side-card {
+    padding: 24px 20px;
+  }
+  .profile-page .profile-photo-wrapper {
+    width: 96px;
+    height: 96px;
+  }
+  .profile-page .profile-photo-placeholder {
+    font-size: 32px;
+  }
+  .profile-page .profile-card .card-header {
+    padding: 16px 20px;
+  }
+  .profile-page .profile-card .card-body {
+    padding: 18px 20px;
+  }
+  .profile-page .skills-checkbox-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  /* ── Calendar ── */
+  .cal-page-title {
+    font-size: 20px !important;
+  }
+  .cal-page-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cal-page-header-left {
+    width: 100%;
+    justify-content: center;
+  }
+  .cal-nav-arrow {
+    width: 32px;
+    height: 32px;
+  }
+  .cal-toolbar {
+    padding: 12px;
+  }
+  .cal-view-switcher button {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  /* Week view mobile */
+  .week-view {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .week-view-times {
+    min-width: 40px;
+  }
+  .week-view-col {
+    min-width: 80px;
+  }
+
+  /* Month view mobile */
+  .month-view-cell {
+    min-height: 60px;
+    padding: 4px;
+  }
+  .month-view-num {
+    font-size: 12px;
+  }
+
+  /* Agenda view mobile */
+  .agenda-day-header {
+    font-size: 16px;
+  }
+
+  /* Mini calendar */
+  .mini-calendar {
+    width: 100%;
+  }
+  .mini-cal-cell {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  /* ── Manage Console ── */
+  .console-card h3 {
+    font-size: 16px;
+  }
+  .console-card {
+    padding: 18px;
+  }
+  .console-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .console-tabs {
+    flex-wrap: nowrap;
+  }
+  .console-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .console-list li > div {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* ── Score Pages ── */
+  .sd-card-table th,
+  .sd-card-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .sd-table-responsive {
+    min-width: 0;
+  }
+  .fm-table-responsive {
+    min-width: 0;
+  }
+
+  /* ── Faculty Score ── */
+  .fm-stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ── Empty states ── */
+  .empty-state {
+    padding: 48px 16px;
+  }
+  .empty-state h3 {
+    font-size: 22px;
+  }
+
+  /* ── General ── */
+  .dashboard-page {
+    padding: 16px 12px 40px;
+  }
+  .loading-spinner {
+    padding: 60px 16px;
+    font-size: 18px;
+  }
+}
+
+
+/* ============================================================================
+   RESPONSIVE — Breakpoint: Small Mobile (< 480px)
+   ============================================================================ */
+@media (max-width: 480px) {
+  .page-content {
+    padding: 16px 12px 32px;
+  }
+  .page-header h1 {
+    font-size: 24px;
+  }
+  .stat-info h3 {
+    font-size: 26px;
+  }
+  .dash-hero-greeting {
+    font-size: 20px;
+  }
+  .dash-stat-value {
+    font-size: 20px;
+  }
+  .dash-stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .dash-stat-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  .dash-link-icon {
+    width: 38px;
+    height: 38px;
+  }
+  .dash-link-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .course-details h3 {
+    font-size: 18px;
+  }
+  .course-card {
+    padding: 16px;
+  }
+  .assignment-info h3 {
+    font-size: 16px;
+  }
+  .summary-value {
+    font-size: 28px;
+  }
+  .login-card {
+    padding: 24px 16px 20px;
+  }
+  .login-container {
+    padding: 20px 12px;
+  }
+  .login-header h1 {
+    font-size: 20px;
+  }
+  .profile-page .page-header h1 {
+    font-size: 24px;
+  }
+  .profile-page .profile-photo-wrapper {
+    width: 80px;
+    height: 80px;
+  }
+  .profile-page .profile-photo-placeholder {
+    font-size: 28px;
+  }
+  .profile-page .profile-name {
+    font-size: 20px;
+  }
+  .dash-insights-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .cal-page-title {
+    font-size: 18px !important;
+  }
+}
