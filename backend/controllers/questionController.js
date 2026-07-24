@@ -29,14 +29,45 @@ function addQuestions(req, res) {
 function getAllQuestions(req, res) {
     const { topic, difficulty, questionType, q } = req.query;
     const filter = {};
-    if (topic)        filter.topic = { $regex: topic, $options: "i" };
-    if (difficulty)   filter.difficulty = difficulty;
+ 
+    // If teacher: only return questions used in THEIR assignments
+    if (req.user.role === "teacher") {
+        // Find their courses
+        const Course = require("../models/Courses.model.js");
+        const Assignment = require("../models/assignments.model.js");
+        
+        return Course.find({ instructor: req.user.id }).select("_id")
+            .then((courses) => {
+                const courseIds = courses.map((c) => c._id);
+                return Assignment.find({ courseId: { $in: courseIds } }).select("questions");
+            })
+            .then((assignments) => {
+                // Collect all question IDs used in those assignments
+                const qIds = new Set();
+                for (const a of assignments) {
+                    for (const qid of a.questions) qIds.add(String(qid));
+                }
+                filter._id = { $in: [...qIds].map((id) => require("mongoose").Types.ObjectId.createFromHexString(id)) };
+                
+                // Apply other filters
+                if (topic) filter.topic = { $regex: topic, $options: "i" };
+                if (difficulty) filter.difficulty = difficulty;
+                if (questionType) filter.questionType = questionType;
+                if (q) filter.text = { $regex: q, $options: "i" };
+ 
+                return Question.find(filter).sort({ createdAt: -1 }).populate("createdBy", "name");
+            })
+            .then((data) => res.json(data))
+            .catch((err) => res.status(500).json({ msg: "...", error: err.message }));
+    }
+ 
+    // Superadmin: show everything as before
+    if (topic) filter.topic = { $regex: topic, $options: "i" };
+    if (difficulty) filter.difficulty = difficulty;
     if (questionType) filter.questionType = questionType;
-    if (q)            filter.text = { $regex: q, $options: "i" };
-
-    Question.find(filter)
-        .sort({ createdAt: -1 })
-        .populate("createdBy", "name")          // attribution: who wrote it
+    if (q) filter.text = { $regex: q, $options: "i" };
+ 
+    Question.find(filter).sort({ createdAt: -1 }).populate("createdBy", "name")         // attribution: who wrote it
         .then(data => res.json(data))
         .catch(err => res.status(500).json({ msg: "Error fetching questions", error: err.message }));
 }
@@ -93,5 +124,7 @@ function updateQuestionById(req,res){
             });
         });
 }
+
+
 
 module.exports = { addQuestion, addQuestions, getAllQuestions, getQuestionById, deleteQuestion,updateQuestionById};

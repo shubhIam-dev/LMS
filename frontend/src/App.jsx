@@ -10,6 +10,10 @@ import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
 import Assignments from "./pages/Assignments";
 import Marks from "./pages/Marks";
+import ScorePage from "./pages/Score/ScorePage";
+import SubjectDetails from "./pages/Score/SubjectDetails";
+import ScoreManagement from "./pages/Faculty/ScoreManagement";
+import StudentScoreForm from "./pages/Faculty/StudentScoreForm";
 import Manage from "./pages/Manage";
 import AssignmentDetail from "./pages/AssignmentDetail";
 import { selectIsAuthed, selectRole } from "./store/authSlice";
@@ -183,6 +187,42 @@ function App() {
             element={
               <ProtectedRoute>
                 <Marks />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ── Scorecard Routes ── */}
+          <Route
+            path="/score"
+            element={
+              <ProtectedRoute>
+                <ScorePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/score/:courseId"
+            element={
+              <ProtectedRoute>
+                <SubjectDetails />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ── Faculty Score Management Routes ── */}
+          <Route
+            path="/faculty/scores"
+            element={
+              <ProtectedRoute roles={["teacher", "superadmin"]}>
+                <ScoreManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/faculty/score-form/:courseId/:studentId"
+            element={
+              <ProtectedRoute roles={["teacher", "superadmin"]}>
+                <StudentScoreForm />
               </ProtectedRoute>
             }
           />

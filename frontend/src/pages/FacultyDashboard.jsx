@@ -178,9 +178,9 @@ function FacultyDashboardContent({ user, role, data, students, studentsLoading, 
             <div className="dash-link-icon dash-link-icon--assignments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="8" y="2" width="8" height="4" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /></svg></div>
             <div className="dash-link-body"><span className="dash-link-text">Manage Assignments</span><span className="dash-link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span></div>
           </Link>
-          <Link to="/marks" className="dash-link-card">
+          <Link to="/faculty/scores" className="dash-link-card">
             <div className="dash-link-icon dash-link-icon--marks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="6" /><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5" /></svg></div>
-            <div className="dash-link-body"><span className="dash-link-text">View Marks</span><span className="dash-link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span></div>
+            <div className="dash-link-body"><span className="dash-link-text">Score Management</span><span className="dash-link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span></div>
           </Link>
           <Link to="/manage" className="dash-link-card">
             <div className="dash-link-icon dash-link-icon--assignments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14" /><path d="M5 12h14" /></svg></div>
