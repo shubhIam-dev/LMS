@@ -4,7 +4,7 @@
 
 import axios from "axios";
 
-const BASE_URL = "https://lms-591n.vercel.app/";
+const BASE_URL = "https://lms-591n.vercel.app";
 const TOKEN_KEY = "token";
 
 // ── Token helpers ───────────────────────────────────────────────────────────

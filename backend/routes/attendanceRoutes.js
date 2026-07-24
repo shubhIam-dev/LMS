@@ -21,5 +21,4 @@ router.get("/getStudentAttendance", getStudentAttendance);
 
 // Get students enrolled in a course
 router.get("/getCourseStudents", getCourseStudents);
-console.log("Attendance routes loaded");
 module.exports = router;
